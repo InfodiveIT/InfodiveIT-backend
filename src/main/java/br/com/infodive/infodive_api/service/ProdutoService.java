@@ -1,0 +1,115 @@
+package br.com.infodive.infodive_api.service;
+
+import br.com.infodive.infodive_api.dto.request.ProdutoRequest;
+import br.com.infodive.infodive_api.dto.response.ProdutoDetalheResponse;
+import br.com.infodive.infodive_api.dto.response.ProdutoResumoResponse;
+import br.com.infodive.infodive_api.entity.Produto;
+import br.com.infodive.infodive_api.exception.ResourceNotFoundException;
+import br.com.infodive.infodive_api.mapper.ProdutoMapper;
+import br.com.infodive.infodive_api.repository.FabricanteRepository;
+import br.com.infodive.infodive_api.repository.ProdutoRepository;
+import br.com.infodive.infodive_api.repository.ServicoRepository;
+import br.com.infodive.infodive_api.repository.SolucaoRepository;
+import java.util.ArrayList;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class ProdutoService {
+
+    private final ProdutoRepository produtoRepository;
+    private final FabricanteRepository fabricanteRepository;
+    private final SolucaoRepository solucaoRepository;
+    private final ServicoRepository servicoRepository;
+    private final ProdutoMapper produtoMapper;
+
+    @Transactional(readOnly = true)
+    public Page<ProdutoResumoResponse> findAll(
+            String categoriaSlug, String fabricanteSlug, Boolean destaque, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return produtoRepository
+                .findAllWithFilters(categoriaSlug, fabricanteSlug, destaque, pageable)
+                .map(produtoMapper::toResumoResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public ProdutoDetalheResponse findBySlug(String slug) {
+        return produtoRepository.findBySlugAndAtivoTrue(slug)
+                .map(produtoMapper::toDetalheResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado: " + slug));
+    }
+
+    @Transactional
+    public ProdutoDetalheResponse create(ProdutoRequest request) {
+        Produto produto = Produto.builder()
+                .slug(request.slug())
+                .nome(request.nome())
+                .subcategoria(request.subcategoria())
+                .descricaoCurta(request.descricaoCurta())
+                .descricaoCompleta(request.descricaoCompleta())
+                .diferenciais(request.diferenciais())
+                .casosDeUso(request.casosDeUso())
+                .servicosEyebrow(request.servicosEyebrow())
+                .servicosTitulo(request.servicosTitulo())
+                .servicosDescricao(request.servicosDescricao())
+                .imagemUrl(request.imagemUrl())
+                .destaque(request.destaque())
+                .build();
+        aplicarRelacionamentos(produto, request);
+        return produtoMapper.toDetalheResponse(produtoRepository.save(produto));
+    }
+
+    @Transactional
+    public ProdutoDetalheResponse update(UUID id, ProdutoRequest request) {
+        Produto produto = produtoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado: " + id));
+        produto.setNome(request.nome());
+        produto.setSubcategoria(request.subcategoria());
+        produto.setDescricaoCurta(request.descricaoCurta());
+        produto.setDescricaoCompleta(request.descricaoCompleta());
+        produto.setDiferenciais(request.diferenciais());
+        produto.setCasosDeUso(request.casosDeUso());
+        produto.setServicosEyebrow(request.servicosEyebrow());
+        produto.setServicosTitulo(request.servicosTitulo());
+        produto.setServicosDescricao(request.servicosDescricao());
+        produto.setImagemUrl(request.imagemUrl());
+        produto.setDestaque(request.destaque());
+        aplicarRelacionamentos(produto, request);
+        return produtoMapper.toDetalheResponse(produtoRepository.save(produto));
+    }
+
+    @Transactional
+    public void delete(UUID id) {
+        Produto produto = produtoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado: " + id));
+        produto.setAtivo(false); // soft delete
+        produtoRepository.save(produto);
+    }
+
+    /** Resolve fabricante, solução (categoria) e serviços a partir dos ids do request. */
+    private void aplicarRelacionamentos(Produto produto, ProdutoRequest request) {
+        if (request.fabricanteId() != null) {
+            produto.setFabricante(fabricanteRepository.findById(request.fabricanteId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Fabricante não encontrado: " + request.fabricanteId())));
+        } else {
+            produto.setFabricante(null);
+        }
+        if (request.categoriaId() != null) {
+            produto.setSolucao(solucaoRepository.findById(request.categoriaId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Categoria não encontrada: " + request.categoriaId())));
+        } else {
+            produto.setSolucao(null);
+        }
+        produto.setServicos(request.servicoIds() == null || request.servicoIds().isEmpty()
+                ? new ArrayList<>()
+                : servicoRepository.findAllById(request.servicoIds()));
+    }
+}
