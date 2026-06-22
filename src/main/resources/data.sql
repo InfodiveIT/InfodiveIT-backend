@@ -28,3 +28,8 @@ JOIN fabricantes f ON
   OR (s.slug = 'infraestrutura' AND f.slug IN ('dell', 'vmware'))
   OR (s.slug = 'nuvem'          AND f.slug IN ('ibm', 'microsoft'))
 ON CONFLICT DO NOTHING;
+
+-- Administrador de teste para desenvolvimento (allowlist)
+INSERT INTO admins_autorizados (id, email, nome, ativo, criado_em)
+VALUES (gen_random_uuid(), 'admin@infodive.com.br', 'Admin Teste', true, now())
+ON CONFLICT (email) DO NOTHING;
