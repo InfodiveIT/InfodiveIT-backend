@@ -1,0 +1,31 @@
+meta {
+  name: Criar lead
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/leads
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "nomeCompleto": "Cliente Interessado",
+    "email": "interessado@empresa.com.br",
+    "telefone": "51999999999",
+    "empresa": "Empresa S.A.",
+    "cargo": "Gerente de Infraestrutura",
+    "mensagem": "Gostaria de agendar uma reunião para conhecer as soluções de segurança e SOC 24/7.",
+    "consentimentoLgpd": true
+  }
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8080/api/v1
+}
+
+docs {
+  PÚBLICO. Registra uma nova captura de lead comercial no sistema.
+}

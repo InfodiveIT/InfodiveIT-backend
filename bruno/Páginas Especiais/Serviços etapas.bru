@@ -1,0 +1,19 @@
+meta {
+  name: Serviços etapas
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/servicos-etapas
+  body: none
+  auth: none
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8080/api/v1
+}
+
+docs {
+  PÚBLICO. Retorna as 8 etapas do ciclo de serviços da Infodive (Fase 10).
+}

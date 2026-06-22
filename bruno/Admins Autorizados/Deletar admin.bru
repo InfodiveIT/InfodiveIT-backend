@@ -1,0 +1,24 @@
+meta {
+  name: Deletar admin
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{baseUrl}}/admins-autorizados/{{adminId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8080/api/v1
+  adminId: 00000000-0000-0000-0000-000000000000
+}
+
+docs {
+  PROTEGIDO (JWT). Realiza soft delete (desativa) o e-mail do administrador.
+}

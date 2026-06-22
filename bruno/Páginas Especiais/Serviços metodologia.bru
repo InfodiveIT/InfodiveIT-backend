@@ -1,0 +1,19 @@
+meta {
+  name: Serviços metodologia
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/servicos-metodologia
+  body: none
+  auth: none
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8080/api/v1
+}
+
+docs {
+  PÚBLICO. Retorna as métricas, pilares e parágrafos da metodologia de serviços da Infodive.
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Contato Info
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/contato-info
+  body: none
+  auth: none
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8080/api/v1
+}
+
+docs {
+  PÚBLICO. Retorna as informações de contato comercial, e-mails de atendimento e status do suporte NOC.
+}

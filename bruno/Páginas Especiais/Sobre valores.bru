@@ -1,0 +1,19 @@
+meta {
+  name: Sobre valores
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/sobre-valores
+  body: none
+  auth: none
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8080/api/v1
+}
+
+docs {
+  PÚBLICO. Retorna os valores institucionais (parágrafos e pilares com ícones).
+}

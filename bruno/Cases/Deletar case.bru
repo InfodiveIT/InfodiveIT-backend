@@ -1,0 +1,24 @@
+meta {
+  name: Deletar case
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/cases/{{caseId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8080/api/v1
+  caseId: 00000000-0000-0000-0000-000000000000
+}
+
+docs {
+  PROTEGIDO (JWT). Realiza soft delete (desativa) do case.
+}

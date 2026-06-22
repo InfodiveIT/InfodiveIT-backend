@@ -1,0 +1,40 @@
+meta {
+  name: Atualizar case
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/cases/{{caseId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "segmento": "Setor Financeiro - Atualizado",
+    "cliente": "Banco Regional",
+    "titulo": "Migração segura para Nuvem Privada com Alta Disponibilidade",
+    "desafio": "O banco precisava reduzir latência e custos de infraestrutura mantendo conformidade rígida de segurança.",
+    "resultado": "Migração concluída em 3 meses com 99.99% de uptime e redução de 35% nos custos operacionais.",
+    "metrica": "35% Economia",
+    "autor": "Carlos Souza",
+    "cargo": "Diretor de TI",
+    "depoimento": "A equipe da Infodive demonstrou profundo domínio técnico e entregou o projeto dentro do prazo.",
+    "imagemUrl": "https://infodive.com.br/cases/banco-regional.jpg",
+    "ordem": 1
+  }
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8080/api/v1
+  caseId: 00000000-0000-0000-0000-000000000000
+}
+
+docs {
+  PROTEGIDO (JWT). Atualiza os dados de um case existente.
+}

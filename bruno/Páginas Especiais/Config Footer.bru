@@ -1,0 +1,19 @@
+meta {
+  name: Config Footer
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/config-footer
+  body: none
+  auth: none
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8080/api/v1
+}
+
+docs {
+  PÚBLICO. Retorna as configurações de links, descrições e badges do rodapé do site.
+}

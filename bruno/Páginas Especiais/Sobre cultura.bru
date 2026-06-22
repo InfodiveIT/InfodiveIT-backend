@@ -1,0 +1,19 @@
+meta {
+  name: Sobre cultura
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/sobre-cultura
+  body: none
+  auth: none
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8080/api/v1
+}
+
+docs {
+  PÚBLICO. Retorna os dados da seção de cultura (textos e fotos da equipe/escritório).
+}

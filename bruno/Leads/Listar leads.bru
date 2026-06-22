@@ -1,0 +1,23 @@
+meta {
+  name: Listar leads
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/leads
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8080/api/v1
+}
+
+docs {
+  PROTEGIDO (JWT). Retorna a lista de todos os leads cadastrados (apenas para administradores).
+}

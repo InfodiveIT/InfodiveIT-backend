@@ -1,0 +1,19 @@
+meta {
+  name: Estatísticas home
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/home-trust-stats
+  body: none
+  auth: none
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8080/api/v1
+}
+
+docs {
+  PÚBLICO. Retorna as métricas de credibilidade (Trust Stats) para os contadores animados.
+}
