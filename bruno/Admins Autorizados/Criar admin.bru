@@ -25,6 +25,12 @@ vars:pre-request {
   baseUrl: http://localhost:8080/api/v1
 }
 
+script:post-response {
+  if (res.status === 201 && res.body.id) {
+    bru.setEnvVar("adminId", res.body.id);
+  }
+}
+
 docs {
   PROTEGIDO (JWT). Adiciona um novo e-mail à allowlist de administradores.
 }
