@@ -20,6 +20,8 @@ public class FabricanteMapper {
                 entity.getNome(),
                 entity.getSlug(),
                 entity.getDescricao(),
+                entity.getDescricaoCurta(),
+                entity.getLogoUrl(),
                 entity.getSiteOficial(),
                 entity.isDestaque(),
                 entity.getOrdem(),

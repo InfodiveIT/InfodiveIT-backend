@@ -25,9 +25,13 @@ public class ProdutoMapper {
                 entity.getSlug(),
                 entity.getSubcategoria(),
                 entity.getDescricaoCurta(),
+                entity.getImagemUrl(),
                 entity.isDestaque(),
                 entity.getSolucao() != null ? entity.getSolucao().getSlug() : null,
-                entity.getFabricante() != null ? entity.getFabricante().getSlug() : null
+                entity.getSolucao() != null ? entity.getSolucao().getTitulo() : null,
+                entity.getFabricante() != null ? entity.getFabricante().getSlug() : null,
+                entity.getFabricante() != null ? entity.getFabricante().getNome() : null,
+                entity.getFabricante() != null ? entity.getFabricante().getLogoUrl() : null
         );
     }
 

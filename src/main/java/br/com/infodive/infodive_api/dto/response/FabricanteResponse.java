@@ -13,6 +13,8 @@ public record FabricanteResponse(
         String nome,
         String slug,
         String descricao,
+        String descricaoCurta,
+        String logoUrl,
         String siteOficial,
         boolean destaque,
         int ordem,

@@ -9,7 +9,11 @@ public record ProdutoResumoResponse(
         String slug,
         String subcategoria,
         String descricaoCurta,
+        String imagemUrl,
         boolean destaque,
         String categoriaSlug,
-        String fabricanteSlug
+        String categoriaTitle,
+        String fabricanteSlug,
+        String fabricanteNome,
+        String fabricanteLogoUrl
 ) {}
