@@ -37,6 +37,13 @@ public class HomeTrustStatsService {
         return toResponse(repository.save(entity));
     }
 
+    @Transactional(readOnly = true)
+    public HomeTrustStatsResponse findById(UUID id) {
+        return repository.findById(id)
+                .map(this::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Stat não encontrado: " + id));
+    }
+
     @Transactional
     public HomeTrustStatsResponse update(UUID id, HomeTrustStatsRequest request) {
         HomeTrustStats entity = repository.findById(id)

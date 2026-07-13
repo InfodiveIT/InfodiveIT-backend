@@ -86,6 +86,10 @@ public class Produto {
     @JoinColumn(name = "solucao_id")
     private Solucao solucao;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "categoria_id")
+    private Categoria categoria;
+
     @ManyToMany
     @JoinTable(
             name = "produto_servico",

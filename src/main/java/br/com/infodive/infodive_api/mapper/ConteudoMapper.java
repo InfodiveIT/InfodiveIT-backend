@@ -30,6 +30,7 @@ public class ConteudoMapper {
                 entity.getSocialPostId(),
                 entity.getPublicadoEm(),
                 entity.isAtivo(),
+                entity.isDestaque(),
                 entity.getCategoria() != null ? entity.getCategoria().getId() : null,
                 entity.getFabricante() != null ? entity.getFabricante().getId() : null,
                 entity.getProduto() != null ? entity.getProduto().getId() : null,

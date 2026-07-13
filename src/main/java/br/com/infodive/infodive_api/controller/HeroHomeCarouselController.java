@@ -30,6 +30,11 @@ public class HeroHomeCarouselController {
         return ResponseEntity.ok(heroHomeCarouselService.findAll());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<HeroHomeCarouselResponse> findById(@PathVariable UUID id) {
+        return ResponseEntity.ok(heroHomeCarouselService.findById(id));
+    }
+
     @PostMapping
     public ResponseEntity<HeroHomeCarouselResponse> create(@Valid @RequestBody HeroHomeCarouselRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(heroHomeCarouselService.create(request));

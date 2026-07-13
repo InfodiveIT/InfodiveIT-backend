@@ -78,6 +78,10 @@ public class Conteudo {
     @Builder.Default
     private boolean ativo = true;
 
+    @Builder.Default
+    private boolean destaque = false;
+
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id")
     private Solucao categoria;

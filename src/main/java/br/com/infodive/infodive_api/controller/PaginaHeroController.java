@@ -20,14 +20,20 @@ public class PaginaHeroController {
 
     private final PaginaHeroService paginaHeroService;
 
-    @GetMapping("/{pagina}")
-    public ResponseEntity<PaginaHeroResponse> findByPagina(@PathVariable String pagina) {
-        return ResponseEntity.ok(paginaHeroService.findByPagina(pagina));
+    @GetMapping
+    public ResponseEntity<java.util.List<PaginaHeroResponse>> findAll() {
+        return ResponseEntity.ok(paginaHeroService.findAll());
     }
 
-    @PutMapping("/{pagina}")
-    public ResponseEntity<PaginaHeroResponse> update(
-            @PathVariable String pagina, @Valid @RequestBody PaginaHeroRequest request) {
-        return ResponseEntity.ok(paginaHeroService.update(pagina, request));
+    @GetMapping("/{identifier}")
+    public ResponseEntity<PaginaHeroResponse> findByIdentifier(@PathVariable String identifier) {
+        return ResponseEntity.ok(paginaHeroService.findByIdentifier(identifier));
     }
+
+    @PutMapping("/{identifier}")
+    public ResponseEntity<PaginaHeroResponse> update(
+            @PathVariable String identifier, @Valid @RequestBody PaginaHeroRequest request) {
+        return ResponseEntity.ok(paginaHeroService.update(identifier, request));
+    }
+
 }

@@ -30,9 +30,14 @@ public class ServicoController {
         return ResponseEntity.ok(servicoService.findAll());
     }
 
-    @GetMapping("/{slug}")
-    public ResponseEntity<ServicoResponse> findBySlug(@PathVariable String slug) {
-        return ResponseEntity.ok(servicoService.findBySlug(slug));
+    @GetMapping("/{identifier}")
+    public ResponseEntity<ServicoResponse> findByIdentifier(@PathVariable String identifier) {
+        try {
+            UUID id = UUID.fromString(identifier);
+            return ResponseEntity.ok(servicoService.findById(id));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.ok(servicoService.findBySlug(identifier));
+        }
     }
 
     @PostMapping

@@ -34,6 +34,13 @@ public class HomeProblemasService {
         return toResponse(repository.save(entity));
     }
 
+    @Transactional(readOnly = true)
+    public HomeProblemasResponse findById(UUID id) {
+        return repository.findById(id)
+                .map(this::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Problema não encontrado: " + id));
+    }
+
     @Transactional
     public HomeProblemasResponse update(UUID id, HomeProblemasRequest request) {
         HomeProblemas entity = repository.findById(id)

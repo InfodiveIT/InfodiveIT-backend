@@ -34,6 +34,13 @@ public class ServicoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Serviço não encontrado: " + slug));
     }
 
+    @Transactional(readOnly = true)
+    public ServicoResponse findById(UUID id) {
+        return servicoRepository.findById(id)
+                .map(servicoMapper::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Serviço não encontrado: " + id));
+    }
+
     @Transactional
     public ServicoResponse create(ServicoRequest request) {
         Servico servico = servicoMapper.toEntity(request);

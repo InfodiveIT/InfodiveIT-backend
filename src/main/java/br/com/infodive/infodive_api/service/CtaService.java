@@ -16,16 +16,37 @@ public class CtaService {
     private final CtaRepository ctaRepository;
 
     @Transactional(readOnly = true)
-    public CtaResponse findByPagina(String pagina) {
-        return ctaRepository.findByPagina(pagina)
+    public java.util.List<CtaResponse> findAll() {
+        return ctaRepository.findAll().stream()
                 .map(this::toResponse)
-                .orElseThrow(() -> new ResourceNotFoundException("CTA não encontrado para a página: " + pagina));
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public CtaResponse findByIdentifier(String identifier) {
+        try {
+            java.util.UUID id = java.util.UUID.fromString(identifier);
+            return ctaRepository.findById(id)
+                    .map(this::toResponse)
+                    .orElseThrow(() -> new ResourceNotFoundException("CTA não encontrado para o ID: " + id));
+        } catch (IllegalArgumentException e) {
+            return ctaRepository.findByPagina(identifier)
+                    .map(this::toResponse)
+                    .orElseThrow(() -> new ResourceNotFoundException("CTA não encontrado para a página: " + identifier));
+        }
     }
 
     @Transactional
-    public CtaResponse update(String pagina, CtaRequest request) {
-        Cta entity = ctaRepository.findByPagina(pagina)
-                .orElseThrow(() -> new ResourceNotFoundException("CTA não encontrado para a página: " + pagina));
+    public CtaResponse update(String identifier, CtaRequest request) {
+        Cta entity;
+        try {
+            java.util.UUID id = java.util.UUID.fromString(identifier);
+            entity = ctaRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("CTA não encontrado para o ID: " + id));
+        } catch (IllegalArgumentException e) {
+            entity = ctaRepository.findByPagina(identifier)
+                    .orElseThrow(() -> new ResourceNotFoundException("CTA não encontrado para a página: " + identifier));
+        }
         entity.setTitulo(request.titulo());
         entity.setSubtitulo(request.subtitulo());
         entity.setCtaTexto(request.ctaTexto());
@@ -33,6 +54,7 @@ public class CtaService {
     }
 
     private CtaResponse toResponse(Cta e) {
-        return new CtaResponse(e.getPagina(), e.getTitulo(), e.getSubtitulo(), e.getCtaTexto());
+        return new CtaResponse(e.getId(), e.getPagina(), e.getTitulo(), e.getSubtitulo(), e.getCtaTexto());
     }
+
 }

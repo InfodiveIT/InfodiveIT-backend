@@ -13,6 +13,8 @@ public record ProdutoResumoResponse(
         boolean destaque,
         String categoriaSlug,
         String categoriaTitle,
+        String solucaoSlug,
+        String solucaoTitle,
         String fabricanteSlug,
         String fabricanteNome,
         String fabricanteLogoUrl

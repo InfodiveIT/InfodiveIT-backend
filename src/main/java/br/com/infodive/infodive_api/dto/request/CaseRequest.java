@@ -13,5 +13,6 @@ public record CaseRequest(
         @NotBlank String cargo,
         @NotBlank String depoimento,
         String imagemUrl,
-        int ordem
+        int ordem,
+        boolean ativo
 ) {}

@@ -21,5 +21,6 @@ public record ProdutoRequest(
         boolean destaque,
         UUID fabricanteId,
         UUID categoriaId,
+        UUID solucaoId,
         List<UUID> servicoIds
 ) {}

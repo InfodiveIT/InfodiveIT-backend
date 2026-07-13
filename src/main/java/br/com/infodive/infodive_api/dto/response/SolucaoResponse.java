@@ -1,6 +1,8 @@
 package br.com.infodive.infodive_api.dto.response;
 
+import br.com.infodive.infodive_api.entity.FeatureItem;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -13,10 +15,18 @@ public record SolucaoResponse(
         String nome,
         String slug,
         String icone,
+        String subtituloCurto,
         String descricaoCurta,
         String descricaoCompleta,
+        List<FeatureItem> features,
+        String imagemUrl,
+        String fabricantesTitulo,
+        String fabricantesDescricao,
+        List<FabricanteResumoResponse> fabricantes,
         int ordem,
         boolean ativo,
+        UUID categoriaId,
+        String categoriaNome,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {}

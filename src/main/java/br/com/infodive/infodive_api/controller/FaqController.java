@@ -30,6 +30,11 @@ public class FaqController {
         return ResponseEntity.ok(faqService.findAll());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<FaqResponse> findById(@PathVariable UUID id) {
+        return ResponseEntity.ok(faqService.findById(id));
+    }
+
     @PostMapping
     public ResponseEntity<FaqResponse> create(@Valid @RequestBody FaqRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(faqService.create(request));

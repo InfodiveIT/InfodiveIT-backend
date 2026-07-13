@@ -15,7 +15,7 @@ public record ConteudoRequest(
         @NotNull TipoConteudo tipo,
         @NotNull OrigemConteudo origem,
         String descricao,
-        List<ConteudoBloco> conteudo,
+        Object conteudo,
         String imagemUrl,
         String urlExterna,
         String socialPostId,
@@ -24,5 +24,6 @@ public record ConteudoRequest(
         LocalDateTime publicadoEm,
         UUID categoriaId,
         UUID fabricanteId,
-        UUID produtoId
+        UUID produtoId,
+        boolean destaque
 ) {}

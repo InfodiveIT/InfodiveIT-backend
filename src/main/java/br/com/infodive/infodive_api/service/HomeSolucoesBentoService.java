@@ -3,6 +3,7 @@ package br.com.infodive.infodive_api.service;
 import br.com.infodive.infodive_api.dto.request.HomeSolucoesBentoRequest;
 import br.com.infodive.infodive_api.dto.response.HomeSolucoesBentoResponse;
 import br.com.infodive.infodive_api.entity.HomeSolucoesBento;
+import br.com.infodive.infodive_api.exception.BusinessException;
 import br.com.infodive.infodive_api.exception.ResourceNotFoundException;
 import br.com.infodive.infodive_api.repository.HomeSolucoesBentoRepository;
 import java.util.List;
@@ -22,16 +23,15 @@ public class HomeSolucoesBentoService {
         return repository.findAllByOrderByOrdemAsc().stream().map(this::toResponse).toList();
     }
 
+    public HomeSolucoesBentoResponse findById(UUID id) {
+        HomeSolucoesBento entity = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Item do bento não encontrado: " + id));
+        return toResponse(entity);
+    }
+
     @Transactional
     public HomeSolucoesBentoResponse create(HomeSolucoesBentoRequest request) {
-        HomeSolucoesBento entity = HomeSolucoesBento.builder()
-                .nome(request.nome())
-                .descricao(request.descricao())
-                .icone(request.icone())
-                .imagemIaUrl(request.imagemIaUrl())
-                .ordem(request.ordem())
-                .build();
-        return toResponse(repository.save(entity));
+        throw new BusinessException("Criação de novos itens no Bento Grid não é permitida. Apenas atualização dos 4 cartões existentes é autorizada.");
     }
 
     @Transactional
@@ -42,20 +42,25 @@ public class HomeSolucoesBentoService {
         entity.setDescricao(request.descricao());
         entity.setIcone(request.icone());
         entity.setImagemIaUrl(request.imagemIaUrl());
+        entity.setTextoCarrossel(request.textoCarrossel());
         entity.setOrdem(request.ordem());
         return toResponse(repository.save(entity));
     }
 
     @Transactional
     public void delete(UUID id) {
-        if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("Item do bento não encontrado: " + id);
-        }
-        repository.deleteById(id);
+        throw new BusinessException("Exclusão de itens do Bento Grid não é permitida. Os 4 cartões são de estrutura fixa.");
     }
 
     private HomeSolucoesBentoResponse toResponse(HomeSolucoesBento e) {
         return new HomeSolucoesBentoResponse(
-                e.getId(), e.getNome(), e.getDescricao(), e.getIcone(), e.getImagemIaUrl(), e.getOrdem());
+                e.getId(),
+                e.getNome(),
+                e.getDescricao(),
+                e.getIcone(),
+                e.getImagemIaUrl(),
+                e.getTextoCarrossel(),
+                e.getOrdem()
+        );
     }
 }

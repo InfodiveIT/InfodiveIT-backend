@@ -34,6 +34,13 @@ public class HeroHomeCarouselService {
         return toResponse(heroHomeCarouselRepository.save(entity));
     }
 
+    @Transactional(readOnly = true)
+    public HeroHomeCarouselResponse findById(UUID id) {
+        return heroHomeCarouselRepository.findById(id)
+                .map(this::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Item do carousel não encontrado: " + id));
+    }
+
     @Transactional
     public HeroHomeCarouselResponse update(UUID id, HeroHomeCarouselRequest request) {
         HeroHomeCarousel entity = heroHomeCarouselRepository.findById(id)

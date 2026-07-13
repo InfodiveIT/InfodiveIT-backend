@@ -15,7 +15,7 @@ public interface ProdutoRepository extends JpaRepository<Produto, UUID> {
     @Query("""
             SELECT p FROM Produto p
             WHERE p.ativo = true
-            AND (:categoriaSlug IS NULL OR p.solucao.slug = :categoriaSlug)
+            AND (:categoriaSlug IS NULL OR p.categoria.slug = :categoriaSlug)
             AND (:fabricanteSlug IS NULL OR p.fabricante.slug = :fabricanteSlug)
             AND (:destaque IS NULL OR p.destaque = :destaque)
             ORDER BY p.destaque DESC, p.nome ASC

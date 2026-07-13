@@ -37,9 +37,14 @@ public class ProdutoController {
         return ResponseEntity.ok(produtoService.findAll(categoria, fabricante, destaque, page, size));
     }
 
-    @GetMapping("/{slug}")
-    public ResponseEntity<ProdutoDetalheResponse> findBySlug(@PathVariable String slug) {
-        return ResponseEntity.ok(produtoService.findBySlug(slug));
+    @GetMapping("/{identifier}")
+    public ResponseEntity<ProdutoDetalheResponse> findByIdentifier(@PathVariable String identifier) {
+        try {
+            UUID id = UUID.fromString(identifier);
+            return ResponseEntity.ok(produtoService.findById(id));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.ok(produtoService.findBySlug(identifier));
+        }
     }
 
     @PostMapping

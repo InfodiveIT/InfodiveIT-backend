@@ -17,5 +17,6 @@ public record SolucaoRequest(
         String fabricantesTitulo,
         String fabricantesDescricao,
         int ordem,
+        UUID categoriaId,
         List<UUID> fabricanteIds
 ) {}

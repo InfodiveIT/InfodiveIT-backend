@@ -32,6 +32,13 @@ public class FaqService {
         return toResponse(faqRepository.save(entity));
     }
 
+    @Transactional(readOnly = true)
+    public FaqResponse findById(UUID id) {
+        return faqRepository.findById(id)
+                .map(this::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("FAQ não encontrado: " + id));
+    }
+
     @Transactional
     public FaqResponse update(UUID id, FaqRequest request) {
         Faq entity = faqRepository.findById(id)

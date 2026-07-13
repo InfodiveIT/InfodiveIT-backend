@@ -34,6 +34,13 @@ public class FabricanteService {
                 .orElseThrow(() -> new ResourceNotFoundException("Fabricante não encontrado: " + slug));
     }
 
+    @Transactional(readOnly = true)
+    public FabricanteResponse findById(UUID id) {
+        return fabricanteRepository.findById(id)
+                .map(fabricanteMapper::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Fabricante não encontrado: " + id));
+    }
+
     @Transactional
     public FabricanteResponse create(FabricanteRequest request) {
         Fabricante fabricante = fabricanteMapper.toEntity(request);

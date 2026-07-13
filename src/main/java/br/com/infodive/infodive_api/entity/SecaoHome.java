@@ -35,7 +35,16 @@ public class SecaoHome {
 
     private String headline;
 
+    @Column(name = "headline_destaque")
+    private String headlineDestaque;
+
     private String subtitulo;
+
+    @Column(name = "box_titulo")
+    private String boxTitulo;
+
+    @Column(name = "box_descricao", columnDefinition = "TEXT")
+    private String boxDescricao;
 
     @UpdateTimestamp
     @Column(name = "updated_at")

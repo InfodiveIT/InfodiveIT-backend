@@ -33,9 +33,14 @@ public class FabricanteController {
         return ResponseEntity.ok(fabricanteService.findAll(destaque));
     }
 
-    @GetMapping("/{slug}")
-    public ResponseEntity<FabricanteResponse> findBySlug(@PathVariable String slug) {
-        return ResponseEntity.ok(fabricanteService.findBySlug(slug));
+    @GetMapping("/{identifier}")
+    public ResponseEntity<FabricanteResponse> findByIdentifier(@PathVariable String identifier) {
+        try {
+            UUID id = UUID.fromString(identifier);
+            return ResponseEntity.ok(fabricanteService.findById(id));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.ok(fabricanteService.findBySlug(identifier));
+        }
     }
 
     @PostMapping

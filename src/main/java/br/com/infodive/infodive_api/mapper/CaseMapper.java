@@ -21,7 +21,8 @@ public class CaseMapper {
                 entity.getCargo(),
                 entity.getDepoimento(),
                 entity.getImagemUrl(),
-                entity.getOrdem()
+                entity.getOrdem(),
+                entity.isAtivo()
         );
     }
 
@@ -53,5 +54,6 @@ public class CaseMapper {
         entity.setDepoimento(request.depoimento());
         entity.setImagemUrl(request.imagemUrl());
         entity.setOrdem(request.ordem());
+        entity.setAtivo(request.ativo());
     }
 }

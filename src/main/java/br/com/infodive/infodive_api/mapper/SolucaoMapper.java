@@ -1,23 +1,43 @@
 package br.com.infodive.infodive_api.mapper;
 
 import br.com.infodive.infodive_api.dto.request.SolucaoRequest;
+import br.com.infodive.infodive_api.dto.response.FabricanteResumoResponse;
 import br.com.infodive.infodive_api.dto.response.SolucaoResponse;
+import br.com.infodive.infodive_api.entity.Fabricante;
 import br.com.infodive.infodive_api.entity.Solucao;
+import java.util.List;
+import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 @Component
 public class SolucaoMapper {
 
     public SolucaoResponse toResponse(Solucao entity) {
+        List<FabricanteResumoResponse> fabricantes = entity.getFabricantes() == null
+                ? List.of()
+                : entity.getFabricantes().stream()
+                        .map(f -> new FabricanteResumoResponse(f.getId(), f.getNome(), f.getSlug(), f.getLogoUrl()))
+                        .toList();
+        UUID categoriaId = entity.getCategoria() != null ? entity.getCategoria().getId() : null;
+        String categoriaNome = entity.getCategoria() != null ? entity.getCategoria().getNome() : null;
+
         return new SolucaoResponse(
                 entity.getId(),
-                entity.getTitulo(),       // frontend espera "nome"
+                entity.getTitulo(),
                 entity.getSlug(),
                 entity.getIcone(),
+                entity.getSubtituloCurto(),
                 entity.getDescricaoCurta(),
-                entity.getOverview(),     // frontend espera "descricaoCompleta"
+                entity.getOverview(),
+                entity.getFeatures(),
+                entity.getImagemUrl(),
+                entity.getFabricantesTitulo(),
+                entity.getFabricantesDescricao(),
+                fabricantes,
                 entity.getOrdem(),
                 entity.isAtivo(),
+                categoriaId,
+                categoriaNome,
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );

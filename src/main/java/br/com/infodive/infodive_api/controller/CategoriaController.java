@@ -1,8 +1,8 @@
 package br.com.infodive.infodive_api.controller;
 
-import br.com.infodive.infodive_api.dto.request.SolucaoRequest;
-import br.com.infodive.infodive_api.dto.response.SolucaoResponse;
-import br.com.infodive.infodive_api.service.SolucaoService;
+import br.com.infodive.infodive_api.dto.request.CategoriaRequest;
+import br.com.infodive.infodive_api.dto.response.CategoriaResponse;
+import br.com.infodive.infodive_api.service.CategoriaService;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -18,43 +18,43 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * O frontend consome soluções como "categorias" (src/lib/api.ts), por isso o endpoint
- * é /categorias mesmo a tabela/entidade sendo Solucao.
- */
 @RestController
 @RequestMapping("/categorias")
 @RequiredArgsConstructor
 public class CategoriaController {
 
-    private final SolucaoService solucaoService;
+    private final CategoriaService service;
 
     @GetMapping
-    public ResponseEntity<List<SolucaoResponse>> findAll() {
-        return ResponseEntity.ok(solucaoService.findAll());
+    public ResponseEntity<List<CategoriaResponse>> findAll() {
+        return ResponseEntity.ok(service.findAll());
     }
 
-    @GetMapping("/{slug}")
-    public ResponseEntity<SolucaoResponse> findBySlug(@PathVariable String slug) {
-        return ResponseEntity.ok(solucaoService.findBySlug(slug));
+    @GetMapping("/{identifier}")
+    public ResponseEntity<CategoriaResponse> findByIdentifier(@PathVariable String identifier) {
+        try {
+            UUID id = UUID.fromString(identifier);
+            return ResponseEntity.ok(service.findById(id));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.ok(service.findBySlug(identifier));
+        }
     }
 
     @PostMapping
-    public ResponseEntity<SolucaoResponse> create(@Valid @RequestBody SolucaoRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(solucaoService.create(request));
+    public ResponseEntity<CategoriaResponse> create(@Valid @RequestBody CategoriaRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SolucaoResponse> update(
+    public ResponseEntity<CategoriaResponse> update(
             @PathVariable UUID id,
-            @Valid @RequestBody SolucaoRequest request) {
-        return ResponseEntity.ok(solucaoService.update(id, request));
+            @Valid @RequestBody CategoriaRequest request) {
+        return ResponseEntity.ok(service.update(id, request));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        solucaoService.delete(id);
+        service.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

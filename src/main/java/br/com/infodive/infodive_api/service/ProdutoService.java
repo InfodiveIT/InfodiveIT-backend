@@ -3,9 +3,11 @@ package br.com.infodive.infodive_api.service;
 import br.com.infodive.infodive_api.dto.request.ProdutoRequest;
 import br.com.infodive.infodive_api.dto.response.ProdutoDetalheResponse;
 import br.com.infodive.infodive_api.dto.response.ProdutoResumoResponse;
+import br.com.infodive.infodive_api.entity.Categoria;
 import br.com.infodive.infodive_api.entity.Produto;
 import br.com.infodive.infodive_api.exception.ResourceNotFoundException;
 import br.com.infodive.infodive_api.mapper.ProdutoMapper;
+import br.com.infodive.infodive_api.repository.CategoriaRepository;
 import br.com.infodive.infodive_api.repository.FabricanteRepository;
 import br.com.infodive.infodive_api.repository.ProdutoRepository;
 import br.com.infodive.infodive_api.repository.ServicoRepository;
@@ -26,6 +28,7 @@ public class ProdutoService {
     private final ProdutoRepository produtoRepository;
     private final FabricanteRepository fabricanteRepository;
     private final SolucaoRepository solucaoRepository;
+    private final CategoriaRepository categoriaRepository;
     private final ServicoRepository servicoRepository;
     private final ProdutoMapper produtoMapper;
 
@@ -43,6 +46,13 @@ public class ProdutoService {
         return produtoRepository.findBySlugAndAtivoTrue(slug)
                 .map(produtoMapper::toDetalheResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado: " + slug));
+    }
+
+    @Transactional(readOnly = true)
+    public ProdutoDetalheResponse findById(UUID id) {
+        return produtoRepository.findById(id)
+                .map(produtoMapper::toDetalheResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado: " + id));
     }
 
     @Transactional
@@ -92,7 +102,7 @@ public class ProdutoService {
         produtoRepository.save(produto);
     }
 
-    /** Resolve fabricante, solução (categoria) e serviços a partir dos ids do request. */
+    /** Resolve fabricante, solução, categoria e serviços a partir dos ids do request. */
     private void aplicarRelacionamentos(Produto produto, ProdutoRequest request) {
         if (request.fabricanteId() != null) {
             produto.setFabricante(fabricanteRepository.findById(request.fabricanteId())
@@ -102,9 +112,16 @@ public class ProdutoService {
             produto.setFabricante(null);
         }
         if (request.categoriaId() != null) {
-            produto.setSolucao(solucaoRepository.findById(request.categoriaId())
+            produto.setCategoria(categoriaRepository.findById(request.categoriaId())
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Categoria não encontrada: " + request.categoriaId())));
+        } else {
+            produto.setCategoria(null);
+        }
+        if (request.solucaoId() != null) {
+            produto.setSolucao(solucaoRepository.findById(request.solucaoId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Solução não encontrada: " + request.solucaoId())));
         } else {
             produto.setSolucao(null);
         }

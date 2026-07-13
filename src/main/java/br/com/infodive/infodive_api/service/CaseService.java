@@ -30,7 +30,6 @@ public class CaseService {
     @Transactional(readOnly = true)
     public CaseResponse findById(UUID id) {
         return caseRepository.findById(id)
-                .filter(Case::isAtivo)
                 .map(caseMapper::toResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Case não encontrado: " + id));
     }

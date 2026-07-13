@@ -23,6 +23,7 @@ public record ConteudoResponse(
         String socialPostId,
         LocalDateTime publicadoEm,
         boolean ativo,
+        boolean destaque,
         UUID categoriaId,
         UUID fabricanteId,
         UUID produtoId,

@@ -39,6 +39,9 @@ public class PaginaHero {
 
     private String tagline;
 
+    @Column(name = "headline_destaque")
+    private String headlineDestaque;
+
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;

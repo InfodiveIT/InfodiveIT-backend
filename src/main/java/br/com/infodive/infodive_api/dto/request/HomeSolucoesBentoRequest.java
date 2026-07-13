@@ -7,5 +7,6 @@ public record HomeSolucoesBentoRequest(
         String descricao,
         String icone,
         String imagemIaUrl,
+        String textoCarrossel,
         int ordem
 ) {}

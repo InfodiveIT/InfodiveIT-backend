@@ -18,13 +18,17 @@ public interface ConteudoRepository extends JpaRepository<Conteudo, UUID> {
             WHERE c.ativo = true
             AND (:tipo IS NULL OR c.tipo = :tipo)
             AND (:origem IS NULL OR c.origem = :origem)
+            AND (:destaque IS NULL OR c.destaque = :destaque)
             ORDER BY c.publicadoEm DESC NULLS LAST, c.createdAt DESC
             """)
     Page<Conteudo> findAllWithFilters(
             @Param("tipo") TipoConteudo tipo,
             @Param("origem") OrigemConteudo origem,
+            @Param("destaque") Boolean destaque,
             Pageable pageable
     );
+
+    long countByAtivoTrueAndDestaqueTrue();
 
     Optional<Conteudo> findBySlugAndAtivoTrue(String slug);
 }

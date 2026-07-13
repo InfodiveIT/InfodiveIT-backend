@@ -20,14 +20,20 @@ public class SecaoHomeController {
 
     private final SecaoHomeService secaoHomeService;
 
-    @GetMapping("/{secao}")
-    public ResponseEntity<SecaoHomeResponse> findBySecao(@PathVariable String secao) {
-        return ResponseEntity.ok(secaoHomeService.findBySecao(secao));
+    @GetMapping
+    public ResponseEntity<java.util.List<SecaoHomeResponse>> findAll() {
+        return ResponseEntity.ok(secaoHomeService.findAll());
     }
 
-    @PutMapping("/{secao}")
-    public ResponseEntity<SecaoHomeResponse> update(
-            @PathVariable String secao, @Valid @RequestBody SecaoHomeRequest request) {
-        return ResponseEntity.ok(secaoHomeService.update(secao, request));
+    @GetMapping("/{identifier}")
+    public ResponseEntity<SecaoHomeResponse> findByIdentifier(@PathVariable String identifier) {
+        return ResponseEntity.ok(secaoHomeService.findByIdentifier(identifier));
     }
+
+    @PutMapping("/{identifier}")
+    public ResponseEntity<SecaoHomeResponse> update(
+            @PathVariable String identifier, @Valid @RequestBody SecaoHomeRequest request) {
+        return ResponseEntity.ok(secaoHomeService.update(identifier, request));
+    }
+
 }

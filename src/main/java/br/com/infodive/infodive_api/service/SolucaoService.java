@@ -3,8 +3,10 @@ package br.com.infodive.infodive_api.service;
 import br.com.infodive.infodive_api.dto.request.SolucaoRequest;
 import br.com.infodive.infodive_api.dto.response.SolucaoResponse;
 import br.com.infodive.infodive_api.entity.Solucao;
+import br.com.infodive.infodive_api.entity.Categoria;
 import br.com.infodive.infodive_api.exception.ResourceNotFoundException;
 import br.com.infodive.infodive_api.mapper.SolucaoMapper;
+import br.com.infodive.infodive_api.repository.CategoriaRepository;
 import br.com.infodive.infodive_api.repository.FabricanteRepository;
 import br.com.infodive.infodive_api.repository.SolucaoRepository;
 import java.util.List;
@@ -19,6 +21,7 @@ public class SolucaoService {
 
     private final SolucaoRepository solucaoRepository;
     private final FabricanteRepository fabricanteRepository;
+    private final CategoriaRepository categoriaRepository;
     private final SolucaoMapper solucaoMapper;
 
     @Transactional(readOnly = true)
@@ -36,10 +39,18 @@ public class SolucaoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada: " + slug));
     }
 
+    @Transactional(readOnly = true)
+    public SolucaoResponse findById(UUID id) {
+        return solucaoRepository.findById(id)
+                .map(solucaoMapper::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada: " + id));
+    }
+
     @Transactional
     public SolucaoResponse create(SolucaoRequest request) {
         Solucao solucao = solucaoMapper.toEntity(request);
         solucao.setFabricantes(resolveFabricantes(request.fabricanteIds()));
+        solucao.setCategoria(resolveCategoria(request.categoriaId()));
         return solucaoMapper.toResponse(solucaoRepository.save(solucao));
     }
 
@@ -49,6 +60,7 @@ public class SolucaoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada: " + id));
         solucaoMapper.updateEntity(solucao, request);
         solucao.setFabricantes(resolveFabricantes(request.fabricanteIds()));
+        solucao.setCategoria(resolveCategoria(request.categoriaId()));
         return solucaoMapper.toResponse(solucaoRepository.save(solucao));
     }
 
@@ -65,5 +77,13 @@ public class SolucaoService {
             return new java.util.ArrayList<>();
         }
         return fabricanteRepository.findAllById(fabricanteIds);
+    }
+
+    private Categoria resolveCategoria(UUID categoriaId) {
+        if (categoriaId == null) {
+            return null;
+        }
+        return categoriaRepository.findById(categoriaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada: " + categoriaId));
     }
 }

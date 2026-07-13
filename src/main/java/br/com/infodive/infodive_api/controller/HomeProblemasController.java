@@ -30,6 +30,11 @@ public class HomeProblemasController {
         return ResponseEntity.ok(service.findAll());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<HomeProblemasResponse> findById(@PathVariable UUID id) {
+        return ResponseEntity.ok(service.findById(id));
+    }
+
     @PostMapping
     public ResponseEntity<HomeProblemasResponse> create(@Valid @RequestBody HomeProblemasRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request));

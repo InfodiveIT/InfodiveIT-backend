@@ -32,14 +32,20 @@ public class ConteudoController {
     public ResponseEntity<Page<ConteudoResponse>> findAll(
             @RequestParam(required = false) TipoConteudo tipo,
             @RequestParam(required = false) OrigemConteudo origem,
+            @RequestParam(required = false) Boolean destaque,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "9") int size) {
-        return ResponseEntity.ok(conteudoService.findAll(tipo, origem, page, size));
+        return ResponseEntity.ok(conteudoService.findAll(tipo, origem, destaque, page, size));
     }
 
-    @GetMapping("/{slug}")
-    public ResponseEntity<ConteudoResponse> findBySlug(@PathVariable String slug) {
-        return ResponseEntity.ok(conteudoService.findBySlug(slug));
+    @GetMapping("/{identifier}")
+    public ResponseEntity<ConteudoResponse> findByIdentifier(@PathVariable String identifier) {
+        try {
+            UUID id = UUID.fromString(identifier);
+            return ResponseEntity.ok(conteudoService.findById(id));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.ok(conteudoService.findBySlug(identifier));
+        }
     }
 
     @PostMapping

@@ -30,6 +30,11 @@ public class HomeSolucoesBentoController {
         return ResponseEntity.ok(service.findAll());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<HomeSolucoesBentoResponse> findById(@PathVariable UUID id) {
+        return ResponseEntity.ok(service.findById(id));
+    }
+
     @PostMapping
     public ResponseEntity<HomeSolucoesBentoResponse> create(@Valid @RequestBody HomeSolucoesBentoRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request));

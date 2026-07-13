@@ -39,6 +39,9 @@ public class HomeSolucoesBento {
     @Column(name = "imagem_ia_url")
     private String imagemIaUrl;
 
+    @Column(name = "texto_carrossel", columnDefinition = "TEXT")
+    private String textoCarrossel;
+
     @Builder.Default
     private int ordem = 0;
 

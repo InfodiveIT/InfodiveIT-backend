@@ -15,5 +15,6 @@ public record CaseResponse(
         String cargo,
         String depoimento,
         String imagemUrl,
-        int ordem
+        int ordem,
+        boolean ativo
 ) {}

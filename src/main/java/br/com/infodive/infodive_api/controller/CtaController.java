@@ -20,14 +20,20 @@ public class CtaController {
 
     private final CtaService ctaService;
 
-    @GetMapping("/{pagina}")
-    public ResponseEntity<CtaResponse> findByPagina(@PathVariable String pagina) {
-        return ResponseEntity.ok(ctaService.findByPagina(pagina));
+    @GetMapping
+    public ResponseEntity<java.util.List<CtaResponse>> findAll() {
+        return ResponseEntity.ok(ctaService.findAll());
     }
 
-    @PutMapping("/{pagina}")
-    public ResponseEntity<CtaResponse> update(
-            @PathVariable String pagina, @Valid @RequestBody CtaRequest request) {
-        return ResponseEntity.ok(ctaService.update(pagina, request));
+    @GetMapping("/{identifier}")
+    public ResponseEntity<CtaResponse> findByIdentifier(@PathVariable String identifier) {
+        return ResponseEntity.ok(ctaService.findByIdentifier(identifier));
     }
+
+    @PutMapping("/{identifier}")
+    public ResponseEntity<CtaResponse> update(
+            @PathVariable String identifier, @Valid @RequestBody CtaRequest request) {
+        return ResponseEntity.ok(ctaService.update(identifier, request));
+    }
+
 }

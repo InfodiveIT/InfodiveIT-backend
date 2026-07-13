@@ -8,5 +8,6 @@ public record HomeSolucoesBentoResponse(
         String descricao,
         String icone,
         String imagemIaUrl,
+        String textoCarrossel,
         int ordem
 ) {}

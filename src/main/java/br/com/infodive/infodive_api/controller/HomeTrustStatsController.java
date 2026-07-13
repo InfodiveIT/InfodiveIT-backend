@@ -30,6 +30,11 @@ public class HomeTrustStatsController {
         return ResponseEntity.ok(service.findAll());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<HomeTrustStatsResponse> findById(@PathVariable UUID id) {
+        return ResponseEntity.ok(service.findById(id));
+    }
+
     @PostMapping
     public ResponseEntity<HomeTrustStatsResponse> create(@Valid @RequestBody HomeTrustStatsRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request));
