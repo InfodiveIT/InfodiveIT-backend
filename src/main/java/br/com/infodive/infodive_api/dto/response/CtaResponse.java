@@ -7,6 +7,7 @@ public record CtaResponse(
         String pagina,
         String titulo,
         String subtitulo,
-        String ctaTexto
+        String ctaTexto,
+        String tipoAcao
 ) {}
 

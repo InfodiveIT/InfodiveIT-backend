@@ -157,10 +157,13 @@ VALUES
   (gen_random_uuid(), 'blog', 'Conteúdos', 'Conhecimento técnico para decisões melhores.', 'Artigos, materiais técnicos e o que a Infodive compartilha nas redes.', 'melhores', now())
 ON CONFLICT (pagina) DO NOTHING;
 
-INSERT INTO ctas (id, pagina, titulo, subtitulo, cta_texto, updated_at)
+INSERT INTO ctas (id, pagina, titulo, subtitulo, cta_texto, tipo_acao, updated_at)
 VALUES
-  (gen_random_uuid(), 'produtos', 'Pronto para evoluir sua TI?', 'Fale com um especialista.', 'Solicitar contato', now()),
-  (gen_random_uuid(), 'solucoes', 'Vamos construir juntos?', 'Conte seu desafio.', 'Falar com a Infodive', now())
+  (gen_random_uuid(), 'solucoes', 'Sua infraestrutura crítica precisa de sustentação?', 'Fale com nossos arquitetos de soluções. Projetamos, implementamos e sustentamos seu ambiente 24/7 com garantia de SLA.', 'Falar com especialista', 'DRAWER', now()),
+  (gen_random_uuid(), 'produtos', 'Não achou o que procurava?', 'Nosso catálogo vai muito além desta vitrine. Fale com um especialista e encontramos o produto certo — com o melhor fabricante — para o seu desafio.', 'Falar com especialista', 'DRAWER', now()),
+  (gen_random_uuid(), 'servicos', 'Pronto para tirar seu projeto do papel?', 'Do diagnóstico à operação assistida, a Infodive assume o ciclo completo. Conte o desafio — a gente desenha o caminho.', 'Falar com especialista', 'DRAWER', now()),
+  (gen_random_uuid(), 'sobre', 'Pronto para escrever o próximo capítulo com a gente?', 'Fale com quem integra tecnologia desde 2003 — e descubra o que um parceiro de verdade muda na sua operação.', 'Falar com a gente', 'DRAWER', now()),
+  (gen_random_uuid(), 'blog', 'Quer receber conteúdos técnicos em primeira mão?', 'Artigos, materiais técnicos e o que a Infodive compartilha nas redes. Fale com a gente e acompanhe o que produzimos sobre infraestrutura, segurança e cloud.', 'Falar com um especialista', 'DRAWER', now())
 ON CONFLICT (pagina) DO NOTHING;
 
 DELETE FROM secoes_home WHERE secao = 'problemas';
@@ -189,8 +192,8 @@ INSERT INTO config_blog (id, artigos_eyebrow, artigos_headline, social_eyebrow, 
 SELECT gen_random_uuid(), 'Blog', 'Artigos e novidades', 'Social', 'Acompanhe nas redes', 'Conteúdo diário sobre tecnologia.', 'https://instagram.com/infodive', 'https://linkedin.com/company/infodive', now()
 WHERE NOT EXISTS (SELECT 1 FROM config_blog);
 
-INSERT INTO contato_info (id, eyebrow, headline, subtitulo, email, telefone, endereco, horario_comercial, horario_noc, card_titulo, card_descricao, card_bullets, card_cta_texto, card_status, updated_at)
-SELECT gen_random_uuid(), 'Contato', 'Fale com a gente', 'Estamos prontos para ajudar.', 'contato@infodive.com.br', '+55 51 3000-0000', 'Porto Alegre, RS', 'Seg a Sex, 9h às 18h', 'Suporte Crítico NOC: 24/7', 'Por que a Infodive?', 'Resposta rápida e especialistas dedicados.', '["Resposta em até 1 hora","Especialistas certificados","NOC 24/7"]'::jsonb, 'Solicitar contato', 'Especialistas online no momento', now()
+INSERT INTO contato_info (id, eyebrow, headline, headline_destaque, subtitulo, email, telefone, endereco, horario_comercial, horario_noc, card_titulo, card_descricao, card_bullets, card_cta_texto, card_status, updated_at)
+SELECT gen_random_uuid(), 'Contato', 'Pronto para evoluir a TI da sua empresa?', 'TI da sua empresa', 'Conecte-se com nossos consultores seniores. Estamos prontos para projetar e implementar soluções de infraestrutura e nuvem sob medida para o seu negócio.', 'contato@infodive.com.br', '+55 (51) 3330-0444', 'Av. Cristóvão Colombo, 3000 - Sala 704 | Floresta, Porto Alegre - RS', 'Seg a Sex, 9h às 18h', 'Suporte Crítico NOC: 24/7', 'Precisa de ajuda imediata?', 'Fale com nossos engenheiros e receba uma análise rápida dos requisitos de TI, segurança e nuvem do seu negócio.', '["Resposta em até 1 hora","Diagnóstico inicial sem custo","Especialistas certificados"]'::jsonb, 'Falar com Especialista', 'Especialistas online no momento', now()
 WHERE NOT EXISTS (SELECT 1 FROM contato_info);
 
 -- ========== Seções da home ==========

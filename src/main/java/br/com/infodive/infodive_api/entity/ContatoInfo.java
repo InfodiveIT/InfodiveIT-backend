@@ -35,6 +35,9 @@ public class ContatoInfo {
 
     private String headline;
 
+    @Column(name = "headline_destaque")
+    private String headlineDestaque;
+
     private String subtitulo;
 
     private String email;

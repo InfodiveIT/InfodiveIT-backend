@@ -38,6 +38,9 @@ public class Cta {
     @Column(name = "cta_texto")
     private String ctaTexto;
 
+    @Column(name = "tipo_acao")
+    private String tipoAcao;
+
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;

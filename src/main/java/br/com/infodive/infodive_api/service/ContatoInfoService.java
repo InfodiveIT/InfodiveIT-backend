@@ -28,6 +28,7 @@ public class ContatoInfoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Informações de contato não encontradas"));
         entity.setEyebrow(request.eyebrow());
         entity.setHeadline(request.headline());
+        entity.setHeadlineDestaque(request.headlineDestaque());
         entity.setSubtitulo(request.subtitulo());
         entity.setEmail(request.email());
         entity.setTelefone(request.telefone());
@@ -44,7 +45,7 @@ public class ContatoInfoService {
 
     private ContatoInfoResponse toResponse(ContatoInfo e) {
         return new ContatoInfoResponse(
-                e.getEyebrow(), e.getHeadline(), e.getSubtitulo(), e.getEmail(), e.getTelefone(), e.getEndereco(),
+                e.getEyebrow(), e.getHeadline(), e.getHeadlineDestaque(), e.getSubtitulo(), e.getEmail(), e.getTelefone(), e.getEndereco(),
                 e.getHorarioComercial(), e.getHorarioNoc(), e.getCardTitulo(), e.getCardDescricao(),
                 e.getCardBullets(), e.getCardCtaTexto(), e.getCardStatus());
     }

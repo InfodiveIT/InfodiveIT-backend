@@ -5,6 +5,7 @@ import java.util.List;
 public record ContatoInfoResponse(
         String eyebrow,
         String headline,
+        String headlineDestaque,
         String subtitulo,
         String email,
         String telefone,

@@ -22,7 +22,7 @@ public class CtaService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public CtaResponse findByIdentifier(String identifier) {
         try {
             java.util.UUID id = java.util.UUID.fromString(identifier);
@@ -32,7 +32,16 @@ public class CtaService {
         } catch (IllegalArgumentException e) {
             return ctaRepository.findByPagina(identifier)
                     .map(this::toResponse)
-                    .orElseThrow(() -> new ResourceNotFoundException("CTA não encontrado para a página: " + identifier));
+                    .orElseGet(() -> {
+                        Cta newCta = Cta.builder()
+                                .pagina(identifier)
+                                .titulo("Pronto para tirar seu projeto do papel?")
+                                .subtitulo("Fale com nossos especialistas e solicite uma avaliação técnica personalizada.")
+                                .ctaTexto("Falar com especialista")
+                                .tipoAcao("DRAWER")
+                                .build();
+                        return toResponse(ctaRepository.save(newCta));
+                    });
         }
     }
 
@@ -45,16 +54,18 @@ public class CtaService {
                     .orElseThrow(() -> new ResourceNotFoundException("CTA não encontrado para o ID: " + id));
         } catch (IllegalArgumentException e) {
             entity = ctaRepository.findByPagina(identifier)
-                    .orElseThrow(() -> new ResourceNotFoundException("CTA não encontrado para a página: " + identifier));
+                    .orElseGet(() -> Cta.builder().pagina(identifier).build());
         }
         entity.setTitulo(request.titulo());
         entity.setSubtitulo(request.subtitulo());
         entity.setCtaTexto(request.ctaTexto());
+        entity.setTipoAcao(request.tipoAcao() != null ? request.tipoAcao() : "DRAWER");
         return toResponse(ctaRepository.save(entity));
     }
 
     private CtaResponse toResponse(Cta e) {
-        return new CtaResponse(e.getId(), e.getPagina(), e.getTitulo(), e.getSubtitulo(), e.getCtaTexto());
+        String tipo = (e.getTipoAcao() != null && !e.getTipoAcao().isBlank()) ? e.getTipoAcao() : "DRAWER";
+        return new CtaResponse(e.getId(), e.getPagina(), e.getTitulo(), e.getSubtitulo(), e.getCtaTexto(), tipo);
     }
 
 }
