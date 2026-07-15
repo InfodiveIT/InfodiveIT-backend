@@ -23,6 +23,7 @@ public class SolucaoService {
     private final FabricanteRepository fabricanteRepository;
     private final CategoriaRepository categoriaRepository;
     private final SolucaoMapper solucaoMapper;
+    private final SupabaseStorageService supabaseStorageService;
 
     @Transactional(readOnly = true)
     public List<SolucaoResponse> findAll() {
@@ -58,7 +59,15 @@ public class SolucaoService {
     public SolucaoResponse update(UUID id, SolucaoRequest request) {
         Solucao solucao = solucaoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada: " + id));
+        
+        String oldImagemUrl = solucao.getImagemUrl();
         solucaoMapper.updateEntity(solucao, request);
+        
+        String newImagemUrl = solucao.getImagemUrl();
+        if (oldImagemUrl != null && !oldImagemUrl.equals(newImagemUrl)) {
+            supabaseStorageService.deleteFile(oldImagemUrl);
+        }
+
         solucao.setFabricantes(resolveFabricantes(request.fabricanteIds()));
         solucao.setCategoria(resolveCategoria(request.categoriaId()));
         return solucaoMapper.toResponse(solucaoRepository.save(solucao));

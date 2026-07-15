@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class HeroHomeCarouselService {
 
     private final HeroHomeCarouselRepository heroHomeCarouselRepository;
+    private final SupabaseStorageService supabaseStorageService;
 
     @Transactional(readOnly = true)
     public List<HeroHomeCarouselResponse> findAll() {
@@ -45,8 +46,15 @@ public class HeroHomeCarouselService {
     public HeroHomeCarouselResponse update(UUID id, HeroHomeCarouselRequest request) {
         HeroHomeCarousel entity = heroHomeCarouselRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Item do carousel não encontrado: " + id));
+        
+        String oldImagemUrl = entity.getImagemUrl();
         entity.setImagemUrl(request.imagemUrl());
         entity.setOrdem(request.ordem());
+
+        if (oldImagemUrl != null && !oldImagemUrl.equals(request.imagemUrl())) {
+            supabaseStorageService.deleteFile(oldImagemUrl);
+        }
+
         return toResponse(heroHomeCarouselRepository.save(entity));
     }
 

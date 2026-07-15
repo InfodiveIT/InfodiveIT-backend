@@ -18,6 +18,7 @@ public class CaseService {
 
     private final CaseRepository caseRepository;
     private final CaseMapper caseMapper;
+    private final SupabaseStorageService supabaseStorageService;
 
     @Transactional(readOnly = true)
     public List<CaseResponse> findAll() {
@@ -44,7 +45,15 @@ public class CaseService {
     public CaseResponse update(UUID id, CaseRequest request) {
         Case entity = caseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Case não encontrado: " + id));
+        
+        String oldImagemUrl = entity.getImagemUrl();
         caseMapper.updateEntity(entity, request);
+
+        String newImagemUrl = entity.getImagemUrl();
+        if (oldImagemUrl != null && !oldImagemUrl.equals(newImagemUrl)) {
+            supabaseStorageService.deleteFile(oldImagemUrl);
+        }
+
         return caseMapper.toResponse(caseRepository.save(entity));
     }
 

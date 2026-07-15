@@ -18,6 +18,7 @@ public class FabricanteService {
 
     private final FabricanteRepository fabricanteRepository;
     private final FabricanteMapper fabricanteMapper;
+    private final SupabaseStorageService supabaseStorageService;
 
     @Transactional(readOnly = true)
     public List<FabricanteResponse> findAll(Boolean destaque) {
@@ -51,7 +52,15 @@ public class FabricanteService {
     public FabricanteResponse update(UUID id, FabricanteRequest request) {
         Fabricante fabricante = fabricanteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Fabricante não encontrado: " + id));
+        
+        String oldLogoUrl = fabricante.getLogoUrl();
         fabricanteMapper.updateEntity(fabricante, request);
+        
+        String newLogoUrl = fabricante.getLogoUrl();
+        if (oldLogoUrl != null && !oldLogoUrl.equals(newLogoUrl)) {
+            supabaseStorageService.deleteFile(oldLogoUrl);
+        }
+
         return fabricanteMapper.toResponse(fabricanteRepository.save(fabricante));
     }
 

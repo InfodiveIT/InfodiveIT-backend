@@ -17,7 +17,8 @@ Esta API serve dois consumidores:
 | Spring Boot | 3.5.x | Framework principal |
 | Spring Data JPA | 3.5.x | ORM / repositórios |
 | Spring Security | 3.5.x | Autenticação JWT + CORS |
-| PostgreSQL | 16 | Banco de dados (Neon) |
+| PostgreSQL | 16 | Banco de dados (Supabase) |
+| Supabase Storage | v1 REST | Armazenamento e hospedagem de imagens |
 | Hibernate | 6.x | Implementação JPA |
 | Lombok | latest | Redução de boilerplate |
 | Maven | 3.9.x | Build e dependências |

@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class SobreCulturaService {
 
     private final SobreCulturaRepository repository;
+    private final SupabaseStorageService supabaseStorageService;
 
     @Transactional(readOnly = true)
     public SobreCulturaResponse get() {
@@ -26,10 +27,26 @@ public class SobreCulturaService {
     public SobreCulturaResponse update(SobreCulturaRequest request) {
         SobreCultura entity = repository.findAll().stream().findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("Cultura (sobre) não encontrada"));
+        
+        var oldFotos = entity.getFotos();
+
         entity.setEyebrow(request.eyebrow());
         entity.setHeadline(request.headline());
         entity.setParagrafo(request.paragrafo());
         entity.setFotos(request.fotos());
+
+        if (oldFotos != null && request.fotos() != null) {
+            java.util.Set<String> newUrls = request.fotos().stream()
+                    .map(f -> f.imagemUrl())
+                    .filter(java.util.Objects::nonNull)
+                    .collect(java.util.stream.Collectors.toSet());
+            for (var oldFoto : oldFotos) {
+                if (oldFoto.imagemUrl() != null && !newUrls.contains(oldFoto.imagemUrl())) {
+                    supabaseStorageService.deleteFile(oldFoto.imagemUrl());
+                }
+            }
+        }
+
         return toResponse(repository.save(entity));
     }
 

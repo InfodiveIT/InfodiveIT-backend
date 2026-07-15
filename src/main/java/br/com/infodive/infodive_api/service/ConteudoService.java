@@ -32,6 +32,7 @@ public class ConteudoService {
     private final ProdutoRepository produtoRepository;
     private final ConteudoMapper conteudoMapper;
     private final ObjectMapper objectMapper;
+    private final SupabaseStorageService supabaseStorageService;
 
     @Transactional(readOnly = true)
     public Page<ConteudoResponse> findAll(TipoConteudo tipo, OrigemConteudo origem, Boolean destaque, int page, int size) {
@@ -81,6 +82,9 @@ public class ConteudoService {
         Conteudo conteudo = conteudoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Conteúdo não encontrado: " + id));
         validarDestaques(id, request.destaque(), conteudo.isAtivo());
+        
+        String oldImagemUrl = conteudo.getImagemUrl();
+
         conteudo.setTitulo(request.titulo());
         conteudo.setSlug(request.slug());
         conteudo.setTipo(request.tipo());
@@ -94,6 +98,11 @@ public class ConteudoService {
         conteudo.setTempoLeitura(request.tempoLeitura());
         conteudo.setPublicadoEm(request.publicadoEm());
         conteudo.setDestaque(request.destaque());
+
+        if (oldImagemUrl != null && !oldImagemUrl.equals(request.imagemUrl())) {
+            supabaseStorageService.deleteFile(oldImagemUrl);
+        }
+
         aplicarRelacionamentos(conteudo, request);
         return conteudoMapper.toResponse(conteudoRepository.save(conteudo));
     }

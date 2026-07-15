@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class HomeSolucoesBentoService {
 
     private final HomeSolucoesBentoRepository repository;
+    private final SupabaseStorageService supabaseStorageService;
 
     @Transactional(readOnly = true)
     public List<HomeSolucoesBentoResponse> findAll() {
@@ -38,12 +39,20 @@ public class HomeSolucoesBentoService {
     public HomeSolucoesBentoResponse update(UUID id, HomeSolucoesBentoRequest request) {
         HomeSolucoesBento entity = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Item do bento não encontrado: " + id));
+        
+        String oldImagemIaUrl = entity.getImagemIaUrl();
+
         entity.setNome(request.nome());
         entity.setDescricao(request.descricao());
         entity.setIcone(request.icone());
         entity.setImagemIaUrl(request.imagemIaUrl());
         entity.setTextoCarrossel(request.textoCarrossel());
         entity.setOrdem(request.ordem());
+
+        if (oldImagemIaUrl != null && !oldImagemIaUrl.equals(request.imagemIaUrl())) {
+            supabaseStorageService.deleteFile(oldImagemIaUrl);
+        }
+
         return toResponse(repository.save(entity));
     }
 

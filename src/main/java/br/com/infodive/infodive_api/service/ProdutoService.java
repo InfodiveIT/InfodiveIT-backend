@@ -31,6 +31,7 @@ public class ProdutoService {
     private final CategoriaRepository categoriaRepository;
     private final ServicoRepository servicoRepository;
     private final ProdutoMapper produtoMapper;
+    private final SupabaseStorageService supabaseStorageService;
 
     @Transactional(readOnly = true)
     public Page<ProdutoResumoResponse> findAll(
@@ -79,6 +80,9 @@ public class ProdutoService {
     public ProdutoDetalheResponse update(UUID id, ProdutoRequest request) {
         Produto produto = produtoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado: " + id));
+        
+        String oldImagemUrl = produto.getImagemUrl();
+
         produto.setNome(request.nome());
         produto.setSubcategoria(request.subcategoria());
         produto.setDescricaoCurta(request.descricaoCurta());
@@ -90,6 +94,11 @@ public class ProdutoService {
         produto.setServicosDescricao(request.servicosDescricao());
         produto.setImagemUrl(request.imagemUrl());
         produto.setDestaque(request.destaque());
+
+        if (oldImagemUrl != null && !oldImagemUrl.equals(request.imagemUrl())) {
+            supabaseStorageService.deleteFile(oldImagemUrl);
+        }
+
         aplicarRelacionamentos(produto, request);
         return produtoMapper.toDetalheResponse(produtoRepository.save(produto));
     }
