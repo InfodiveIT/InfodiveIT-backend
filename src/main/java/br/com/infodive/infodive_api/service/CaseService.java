@@ -61,7 +61,9 @@ public class CaseService {
     public void delete(UUID id) {
         Case entity = caseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Case não encontrado: " + id));
-        entity.setAtivo(false);
-        caseRepository.save(entity);
+        if (entity.getImagemUrl() != null) {
+            supabaseStorageService.deleteFile(entity.getImagemUrl());
+        }
+        caseRepository.delete(entity);
     }
 }

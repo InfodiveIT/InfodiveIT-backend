@@ -59,7 +59,6 @@ public class ServicoService {
     public void delete(UUID id) {
         Servico servico = servicoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Serviço não encontrado: " + id));
-        servico.setAtivo(false);
-        servicoRepository.save(servico);
+        servicoRepository.delete(servico);
     }
 }

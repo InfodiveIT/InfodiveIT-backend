@@ -73,7 +73,6 @@ public class AdminAutorizadoService {
     public void delete(UUID id) {
         AdminAutorizado entity = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Administrador não encontrado: " + id));
-        entity.setAtivo(false); // soft delete
-        repository.save(entity);
+        repository.delete(entity);
     }
 }

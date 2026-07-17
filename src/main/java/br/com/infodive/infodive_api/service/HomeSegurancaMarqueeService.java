@@ -48,8 +48,7 @@ public class HomeSegurancaMarqueeService {
     public void delete(UUID id) {
         HomeSegurancaMarquee entity = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Item do marquee não encontrado: " + id));
-        entity.setAtivo(false);
-        repository.save(entity);
+        repository.delete(entity);
     }
 
     private HomeSegurancaMarqueeResponse toResponse(HomeSegurancaMarquee e) {

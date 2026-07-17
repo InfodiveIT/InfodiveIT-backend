@@ -107,8 +107,10 @@ public class ProdutoService {
     public void delete(UUID id) {
         Produto produto = produtoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado: " + id));
-        produto.setAtivo(false); // soft delete
-        produtoRepository.save(produto);
+        if (produto.getImagemUrl() != null) {
+            supabaseStorageService.deleteFile(produto.getImagemUrl());
+        }
+        produtoRepository.delete(produto);
     }
 
     /** Resolve fabricante, solução, categoria e serviços a partir dos ids do request. */

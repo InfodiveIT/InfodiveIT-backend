@@ -57,8 +57,7 @@ public class HomeProblemasService {
     public void delete(UUID id) {
         HomeProblemas entity = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Problema não encontrado: " + id));
-        entity.setAtivo(false);
-        repository.save(entity);
+        repository.delete(entity);
     }
 
     private HomeProblemasResponse toResponse(HomeProblemas e) {

@@ -68,7 +68,9 @@ public class FabricanteService {
     public void delete(UUID id) {
         Fabricante fabricante = fabricanteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Fabricante não encontrado: " + id));
-        fabricante.setAtivo(false); // soft delete
-        fabricanteRepository.save(fabricante);
+        if (fabricante.getLogoUrl() != null) {
+            supabaseStorageService.deleteFile(fabricante.getLogoUrl());
+        }
+        fabricanteRepository.delete(fabricante);
     }
 }

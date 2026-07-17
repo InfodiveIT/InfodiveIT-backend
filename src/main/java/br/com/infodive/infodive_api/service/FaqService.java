@@ -53,8 +53,7 @@ public class FaqService {
     public void delete(UUID id) {
         Faq entity = faqRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("FAQ não encontrado: " + id));
-        entity.setAtivo(false);
-        faqRepository.save(entity);
+        faqRepository.delete(entity);
     }
 
     private FaqResponse toResponse(Faq e) {

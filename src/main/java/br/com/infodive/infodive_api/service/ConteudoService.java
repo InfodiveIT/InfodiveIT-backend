@@ -114,8 +114,10 @@ public class ConteudoService {
         if (conteudo.isDestaque() && conteudo.isAtivo()) {
             validarDestaques(id, false, false);
         }
-        conteudo.setAtivo(false);
-        conteudoRepository.save(conteudo);
+        if (conteudo.getImagemUrl() != null) {
+            supabaseStorageService.deleteFile(conteudo.getImagemUrl());
+        }
+        conteudoRepository.delete(conteudo);
     }
 
     private void validarDestaques(UUID idSendoModificado, boolean novoDestaque, boolean novoAtivo) {

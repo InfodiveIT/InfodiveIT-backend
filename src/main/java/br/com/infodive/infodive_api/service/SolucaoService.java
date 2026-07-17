@@ -76,9 +76,11 @@ public class SolucaoService {
     @Transactional
     public void delete(UUID id) {
         Solucao solucao = solucaoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada: " + id));
-        solucao.setAtivo(false); // soft delete
-        solucaoRepository.save(solucao);
+                .orElseThrow(() -> new ResourceNotFoundException("Solução não encontrada: " + id));
+        if (solucao.getImagemUrl() != null) {
+            supabaseStorageService.deleteFile(solucao.getImagemUrl());
+        }
+        solucaoRepository.delete(solucao);
     }
 
     private List<br.com.infodive.infodive_api.entity.Fabricante> resolveFabricantes(List<UUID> fabricanteIds) {

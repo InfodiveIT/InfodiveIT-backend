@@ -18,22 +18,28 @@ public class SolucaoMapper {
                 : entity.getFabricantes().stream()
                         .map(f -> new FabricanteResumoResponse(f.getId(), f.getNome(), f.getSlug(), f.getLogoUrl()))
                         .toList();
+        List<UUID> fabricanteIds = entity.getFabricantes() == null
+                ? List.of()
+                : entity.getFabricantes().stream().map(Fabricante::getId).toList();
         UUID categoriaId = entity.getCategoria() != null ? entity.getCategoria().getId() : null;
         String categoriaNome = entity.getCategoria() != null ? entity.getCategoria().getNome() : null;
 
         return new SolucaoResponse(
                 entity.getId(),
                 entity.getTitulo(),
+                entity.getTitulo(),
                 entity.getSlug(),
                 entity.getIcone(),
                 entity.getSubtituloCurto(),
                 entity.getDescricaoCurta(),
+                entity.getOverview(),
                 entity.getOverview(),
                 entity.getFeatures(),
                 entity.getImagemUrl(),
                 entity.getFabricantesTitulo(),
                 entity.getFabricantesDescricao(),
                 fabricantes,
+                fabricanteIds,
                 entity.getOrdem(),
                 entity.isAtivo(),
                 categoriaId,
@@ -56,6 +62,7 @@ public class SolucaoMapper {
                 .fabricantesTitulo(request.fabricantesTitulo())
                 .fabricantesDescricao(request.fabricantesDescricao())
                 .ordem(request.ordem())
+                .ativo(request.ativo())
                 .build();
     }
 
@@ -74,5 +81,6 @@ public class SolucaoMapper {
         entity.setFabricantesTitulo(request.fabricantesTitulo());
         entity.setFabricantesDescricao(request.fabricantesDescricao());
         entity.setOrdem(request.ordem());
+        entity.setAtivo(request.ativo());
     }
 }

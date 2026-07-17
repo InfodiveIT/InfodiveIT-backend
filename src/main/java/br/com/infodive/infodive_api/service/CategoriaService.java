@@ -59,7 +59,6 @@ public class CategoriaService {
     public void delete(UUID id) {
         Categoria entity = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada: " + id));
-        entity.setAtivo(false); // soft delete
-        repository.save(entity);
+        repository.delete(entity);
     }
 }

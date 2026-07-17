@@ -62,8 +62,10 @@ public class HeroHomeCarouselService {
     public void delete(UUID id) {
         HeroHomeCarousel entity = heroHomeCarouselRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Item do carousel não encontrado: " + id));
-        entity.setAtivo(false);
-        heroHomeCarouselRepository.save(entity);
+        if (entity.getImagemUrl() != null) {
+            supabaseStorageService.deleteFile(entity.getImagemUrl());
+        }
+        heroHomeCarouselRepository.delete(entity);
     }
 
     private HeroHomeCarouselResponse toResponse(HeroHomeCarousel e) {

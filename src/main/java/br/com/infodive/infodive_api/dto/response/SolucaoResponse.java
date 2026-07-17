@@ -6,23 +6,25 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Espelha o CategoriaDTO esperado pelo frontend (src/lib/api.ts).
- * No banco a tabela chama-se {@code solucoes}; o frontend consome como "categoria".
- * Mapeamentos: {@code nome} ← titulo, {@code descricaoCompleta} ← overview.
+ * Espelha o SolucaoDTO esperado pelo frontend (src/lib/api.ts) e react-admin.
+ * Mapeamentos: {@code nome} / {@code titulo} ← titulo, {@code descricaoCompleta} / {@code overview} ← overview.
  */
 public record SolucaoResponse(
         UUID id,
         String nome,
+        String titulo,
         String slug,
         String icone,
         String subtituloCurto,
         String descricaoCurta,
         String descricaoCompleta,
+        String overview,
         List<FeatureItem> features,
         String imagemUrl,
         String fabricantesTitulo,
         String fabricantesDescricao,
         List<FabricanteResumoResponse> fabricantes,
+        List<UUID> fabricanteIds,
         int ordem,
         boolean ativo,
         UUID categoriaId,
@@ -30,3 +32,4 @@ public record SolucaoResponse(
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {}
+
