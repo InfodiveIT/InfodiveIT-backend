@@ -24,6 +24,11 @@ public class SolucaoMapper {
         UUID categoriaId = entity.getCategoria() != null ? entity.getCategoria().getId() : null;
         String categoriaNome = entity.getCategoria() != null ? entity.getCategoria().getNome() : null;
 
+        List<String> recursosChave = java.util.stream.Stream.of(
+                        entity.getRecursoChave1(), entity.getRecursoChave2(), entity.getRecursoChave3())
+                .filter(r -> r != null && !r.isBlank())
+                .toList();
+
         return new SolucaoResponse(
                 entity.getId(),
                 entity.getTitulo(),
@@ -32,6 +37,10 @@ public class SolucaoMapper {
                 entity.getIcone(),
                 entity.getSubtituloCurto(),
                 entity.getDescricaoCurta(),
+                entity.getRecursoChave1(),
+                entity.getRecursoChave2(),
+                entity.getRecursoChave3(),
+                recursosChave,
                 entity.getOverview(),
                 entity.getOverview(),
                 entity.getFeatures(),
@@ -56,6 +65,9 @@ public class SolucaoMapper {
                 .icone(request.icone())
                 .subtituloCurto(request.subtituloCurto())
                 .descricaoCurta(request.descricaoCurta())
+                .recursoChave1(request.recursoChave1())
+                .recursoChave2(request.recursoChave2())
+                .recursoChave3(request.recursoChave3())
                 .overview(request.overview())
                 .features(request.features())
                 .imagemUrl(request.imagemUrl())
@@ -75,6 +87,9 @@ public class SolucaoMapper {
         entity.setIcone(request.icone());
         entity.setSubtituloCurto(request.subtituloCurto());
         entity.setDescricaoCurta(request.descricaoCurta());
+        entity.setRecursoChave1(request.recursoChave1());
+        entity.setRecursoChave2(request.recursoChave2());
+        entity.setRecursoChave3(request.recursoChave3());
         entity.setOverview(request.overview());
         entity.setFeatures(request.features());
         entity.setImagemUrl(request.imagemUrl());

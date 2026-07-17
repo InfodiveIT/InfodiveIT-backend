@@ -52,6 +52,15 @@ public class Solucao {
     @Column(name = "descricao_curta")
     private String descricaoCurta;
 
+    @Column(name = "recurso_chave_1")
+    private String recursoChave1;
+
+    @Column(name = "recurso_chave_2")
+    private String recursoChave2;
+
+    @Column(name = "recurso_chave_3")
+    private String recursoChave3;
+
     @Column(columnDefinition = "TEXT")
     private String overview;
 
