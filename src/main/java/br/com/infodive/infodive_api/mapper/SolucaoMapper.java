@@ -62,6 +62,9 @@ public class SolucaoMapper {
     }
 
     public Solucao toEntity(SolucaoRequest request) {
+        String effectiveTitulo = request.getEffectiveTitulo();
+        String effectiveOverview = request.getEffectiveOverview();
+
         List<String> recursosChave = resolveRecursosChave(
                 request.recursoChave1(),
                 request.recursoChave2(),
@@ -71,14 +74,14 @@ public class SolucaoMapper {
 
         return Solucao.builder()
                 .slug(request.slug())
-                .titulo(request.titulo())
+                .titulo(effectiveTitulo)
                 .icone(request.icone())
                 .subtituloCurto(request.subtituloCurto())
                 .descricaoCurta(request.descricaoCurta())
                 .recursoChave1(recursosChave.size() > 0 ? recursosChave.get(0) : null)
                 .recursoChave2(recursosChave.size() > 1 ? recursosChave.get(1) : null)
                 .recursoChave3(recursosChave.size() > 2 ? recursosChave.get(2) : null)
-                .overview(request.overview())
+                .overview(effectiveOverview)
                 .features(request.features())
                 .imagemUrl(request.imagemUrl())
                 .fabricantesTitulo(request.fabricantesTitulo())
@@ -93,6 +96,9 @@ public class SolucaoMapper {
      * são resolvidas no service (precisa do FabricanteRepository).
      */
     public void updateEntity(Solucao entity, SolucaoRequest request) {
+        String effectiveTitulo = request.getEffectiveTitulo();
+        String effectiveOverview = request.getEffectiveOverview();
+
         List<String> recursosChave = resolveRecursosChave(
                 request.recursoChave1(),
                 request.recursoChave2(),
@@ -100,14 +106,21 @@ public class SolucaoMapper {
                 request.features()
         );
 
-        entity.setTitulo(request.titulo());
+        if (effectiveTitulo != null && !effectiveTitulo.isBlank()) {
+            entity.setTitulo(effectiveTitulo);
+        }
+        if (effectiveOverview != null) {
+            entity.setOverview(effectiveOverview);
+        }
+        if (request.slug() != null && !request.slug().isBlank()) {
+            entity.setSlug(request.slug());
+        }
         entity.setIcone(request.icone());
         entity.setSubtituloCurto(request.subtituloCurto());
         entity.setDescricaoCurta(request.descricaoCurta());
         entity.setRecursoChave1(recursosChave.size() > 0 ? recursosChave.get(0) : null);
         entity.setRecursoChave2(recursosChave.size() > 1 ? recursosChave.get(1) : null);
         entity.setRecursoChave3(recursosChave.size() > 2 ? recursosChave.get(2) : null);
-        entity.setOverview(request.overview());
         entity.setFeatures(request.features());
         entity.setImagemUrl(request.imagemUrl());
         entity.setFabricantesTitulo(request.fabricantesTitulo());
