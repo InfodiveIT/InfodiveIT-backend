@@ -6,6 +6,7 @@
 
 -- Limpeza de desenvolvimento para garantir re-seeding correto com novos campos e relacionamentos
 ALTER TABLE conteudos ADD COLUMN IF NOT EXISTS destaque BOOLEAN DEFAULT FALSE;
+ALTER TABLE produtos ADD COLUMN IF NOT EXISTS novidade BOOLEAN DEFAULT FALSE;
 
 DELETE FROM leads;
 DELETE FROM conteudos;

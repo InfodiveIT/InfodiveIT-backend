@@ -79,6 +79,7 @@ public class Produto {
     private boolean destaque = false;
 
     @Builder.Default
+    @Column(name = "novidade", nullable = false, columnDefinition = "boolean default false")
     private boolean novidade = false;
 
     @Builder.Default
