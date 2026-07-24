@@ -4,6 +4,8 @@ import br.com.infodive.infodive_api.dto.response.LogAuditoriaResponse;
 import br.com.infodive.infodive_api.entity.LogAuditoria;
 import br.com.infodive.infodive_api.mapper.LogAuditoriaMapper;
 import br.com.infodive.infodive_api.repository.LogAuditoriaRepository;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +46,7 @@ public class LogAuditoriaService {
                 usuarioNome = usuarioEmail.contains("@") ? usuarioEmail.split("@")[0] : usuarioEmail;
             }
 
-            // Deduplicação: ignora requisições idênticas disparadas em menos de 2 segundos (ex: dupla requisição HTTP ou AOP + chamada manual)
+            // Deduplicação: ignora requisições idênticas disparadas em menos de 2 segundos
             String dedupeKey = usuarioEmail + ":" + acao + ":" + recurso + ":" + (recursoId != null ? recursoId : "");
             long now = System.currentTimeMillis();
             Long lastTime = RECENT_LOGS.get(dedupeKey);
@@ -61,6 +63,7 @@ public class LogAuditoriaService {
                     .recurso(recurso)
                     .recursoId(recursoId)
                     .detalhes(detalhes)
+                    .criadoEm(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
                     .build();
 
             repository.save(logEntry);
