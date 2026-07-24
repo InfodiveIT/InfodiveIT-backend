@@ -34,6 +34,7 @@ public class ProdutoService {
     private final ServicoRepository servicoRepository;
     private final ProdutoMapper produtoMapper;
     private final SupabaseStorageService supabaseStorageService;
+    private final LogAuditoriaService logAuditoriaService;
 
     @Cacheable(value = "produtos", key = "(#categoriaSlug ?: 'all') + '-' + (#fabricanteSlug ?: 'all') + '-' + (#destaque ?: 'all') + '-' + (#novidade ?: 'all') + '-' + #page + '-' + #size")
     @Transactional(readOnly = true)
@@ -94,7 +95,9 @@ public class ProdutoService {
                 .novidade(Boolean.TRUE.equals(request.novidade()))
                 .build();
         aplicarRelacionamentos(produto, request);
-        return produtoMapper.toDetalheResponse(produtoRepository.save(produto));
+        Produto saved = produtoRepository.save(produto);
+        logAuditoriaService.registrar("CRIACAO", "Produtos", saved.getId().toString(), "Criou o produto: " + saved.getNome());
+        return produtoMapper.toDetalheResponse(saved);
     }
 
     @CacheEvict(value = {"produtos", "produto", "produto-novidade"}, allEntries = true)
@@ -132,7 +135,9 @@ public class ProdutoService {
         }
 
         aplicarRelacionamentos(produto, request);
-        return produtoMapper.toDetalheResponse(produtoRepository.save(produto));
+        Produto updated = produtoRepository.save(produto);
+        logAuditoriaService.registrar("ATUALIZACAO", "Produtos", updated.getId().toString(), "Atualizou o produto: " + updated.getNome());
+        return produtoMapper.toDetalheResponse(updated);
     }
 
     @CacheEvict(value = {"produtos", "produto", "produto-novidade"}, allEntries = true)
@@ -144,6 +149,7 @@ public class ProdutoService {
             supabaseStorageService.deleteFile(produto.getImagemUrl());
         }
         produtoRepository.delete(produto);
+        logAuditoriaService.registrar("EXCLUSAO", "Produtos", produto.getId().toString(), "Excluiu o produto: " + produto.getNome());
     }
 
     private void desmarcarOutrasNovidades(UUID currentId) {
