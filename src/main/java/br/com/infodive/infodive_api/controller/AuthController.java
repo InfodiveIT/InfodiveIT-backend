@@ -31,28 +31,48 @@ public class AuthController {
     @Value("${auth.blogger-domains:}")
     private String bloggerDomainsConfig;
 
+    @Value("${auth.partner-access-key:infodive_partner_2026}")
+    private String partnerAccessKey;
+
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        // 1. Valida o token Entra ID e extrai email e nome
-        EntraIdUser entraUser = entraIdService.validateAndExtract(request.idToken());
+        // 1. Autenticação de Parceiros Externos / Agências (E-mail + Chave de Acesso)
+        if (request.email() != null && !request.email().isBlank() && request.accessKey() != null) {
+            String partnerEmail = request.email().toLowerCase().trim();
 
+            if (!request.accessKey().equals(partnerAccessKey)) {
+                throw new AcessoNegadoException("Chave de acesso do parceiro inválida.");
+            }
+
+            if (!isBloggerAutorizado(partnerEmail)) {
+                throw new AcessoNegadoException("E-mail de parceiro não cadastrado na lista de editores permitidos.");
+            }
+
+            String partnerName = partnerEmail.split("@")[0];
+            String role = "ROLE_BLOGGER";
+            String localToken = jwtService.generateToken(partnerEmail, partnerName, role);
+
+            return ResponseEntity.ok(new LoginResponse(localToken, partnerEmail, partnerName, role));
+        }
+
+        // 2. Autenticação Oficial Microsoft Entra ID (Colaboradores Infodive)
+        if (request.idToken() == null || request.idToken().isBlank()) {
+            throw new IllegalArgumentException("Token de autenticação não fornecido.");
+        }
+
+        EntraIdUser entraUser = entraIdService.validateAndExtract(request.idToken());
         String emailLower = entraUser.email().toLowerCase().trim();
         String role;
 
-        // 2. Determina o perfil (Role) do usuário
         if (emailLower.endsWith("@infodive.com.br")) {
-            // Colaboradores internos Infodive recebem perfil de Administrador Geral
             role = "ROLE_ADMIN";
         } else if (isBloggerAutorizado(emailLower)) {
-            // Agências terceiras / Editores externos recebem perfil estrito de Blog
             role = "ROLE_BLOGGER";
         } else {
-            throw new AcessoNegadoException("Acesso negado: Conta sem permissão de acesso ao painel.");
+            throw new AcessoNegadoException("Acesso negado: Apenas e-mails autorizados têm acesso ao painel.");
         }
 
-        // 3. Gera o JWT local contendo a Role apropriada
         String localToken = jwtService.generateToken(entraUser.email(), entraUser.nome(), role);
-
         return ResponseEntity.ok(new LoginResponse(localToken, entraUser.email(), entraUser.nome(), role));
     }
 
