@@ -23,7 +23,6 @@ public class JwtService {
     private SecretKey getSigningKey() {
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
         if (keyBytes.length < 32) {
-            // Garante que a chave tenha pelo menos 256 bits (32 bytes) para evitar WeakKeyException
             byte[] paddedBytes = new byte[32];
             System.arraycopy(keyBytes, 0, paddedBytes, 0, Math.min(keyBytes.length, 32));
             return Keys.hmacShaKeyFor(paddedBytes);
@@ -31,9 +30,10 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(String email, String nome) {
+    public String generateToken(String email, String nome, String role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("nome", nome);
+        claims.put("role", role != null ? role : "ROLE_ADMIN");
 
         return Jwts.builder()
                 .claims(claims)
@@ -46,6 +46,11 @@ public class JwtService {
 
     public String extractEmail(String token) {
         return extractAllClaims(token).getSubject();
+    }
+
+    public String extractRole(String token) {
+        Object role = extractAllClaims(token).get("role");
+        return role != null ? role.toString() : "ROLE_ADMIN";
     }
 
     public boolean isTokenValid(String token) {

@@ -40,9 +40,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             if (jwtService.isTokenValid(jwt)) {
                 String email = jwtService.extractEmail(jwt);
+                String role = jwtService.extractRole(jwt);
 
                 if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_ADMIN");
+                    SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role != null ? role : "ROLE_ADMIN");
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             email,
                             null,
@@ -50,7 +51,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
-                    log.debug("Autenticação válida no Spring Security para o usuário: {}", email);
+                    log.debug("Autenticação válida no Spring Security [{}] para o usuário: {}", role, email);
                 }
             } else {
                 log.warn("Token JWT inválido ou expirado recebido na requisição: {}", request.getRequestURI());

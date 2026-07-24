@@ -38,9 +38,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Login público
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        // Uploads públicos
+                        // Uploads públicos de leitura
                         .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
-                        // Endpoints públicos de leitura
+                        // Endpoints públicos de leitura do site principal
                         .requestMatchers(HttpMethod.GET, "/fabricantes/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/categorias/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/solucoes/**").permitAll()
@@ -68,8 +68,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/home-trust-stats/**").permitAll()
                         // Lead: POST público
                         .requestMatchers(HttpMethod.POST, "/leads").permitAll()
-                        // Tudo mais requer autenticação
-                        .anyRequest().authenticated()
+                        // Módulo Blog & Uploads: Acessível por ADMIN e BLOGGER
+                        .requestMatchers("/conteudos/**", "/config-blog/**", "/uploads/**").hasAnyRole("ADMIN", "BLOGGER")
+                        // Tudo mais requer perfil completo de ADMIN (Catálogo, Soluções, Serviços, Leads, Auditoria, etc)
+                        .anyRequest().hasRole("ADMIN")
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

@@ -7,7 +7,10 @@ import br.com.infodive.infodive_api.service.JwtService;
 import br.com.infodive.infodive_api.service.MicrosoftEntraIdService;
 import br.com.infodive.infodive_api.service.MicrosoftEntraIdService.EntraIdUser;
 import jakarta.validation.Valid;
+import java.util.Arrays;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,20 +25,58 @@ public class AuthController {
     private final MicrosoftEntraIdService entraIdService;
     private final JwtService jwtService;
 
+    @Value("${auth.blogger-emails:}")
+    private String bloggerEmailsConfig;
+
+    @Value("${auth.blogger-domains:}")
+    private String bloggerDomainsConfig;
+
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         // 1. Valida o token Entra ID e extrai email e nome
         EntraIdUser entraUser = entraIdService.validateAndExtract(request.idToken());
 
-        // 2. Valida se o e-mail pertence ao domínio corporativo @infodive.com.br
         String emailLower = entraUser.email().toLowerCase().trim();
-        if (!emailLower.endsWith("@infodive.com.br")) {
-            throw new AcessoNegadoException("Acesso negado: Apenas contas corporativas com domínio @infodive.com.br têm permissão de acesso ao painel.");
+        String role;
+
+        // 2. Determina o perfil (Role) do usuário
+        if (emailLower.endsWith("@infodive.com.br")) {
+            // Colaboradores internos Infodive recebem perfil de Administrador Geral
+            role = "ROLE_ADMIN";
+        } else if (isBloggerAutorizado(emailLower)) {
+            // Agências terceiras / Editores externos recebem perfil estrito de Blog
+            role = "ROLE_BLOGGER";
+        } else {
+            throw new AcessoNegadoException("Acesso negado: Conta sem permissão de acesso ao painel.");
         }
 
-        // 3. Gera o JWT local assinado pelo sistema para consumo das APIs administrativas
-        String localToken = jwtService.generateToken(entraUser.email(), entraUser.nome());
+        // 3. Gera o JWT local contendo a Role apropriada
+        String localToken = jwtService.generateToken(entraUser.email(), entraUser.nome(), role);
 
-        return ResponseEntity.ok(new LoginResponse(localToken, entraUser.email(), entraUser.nome()));
+        return ResponseEntity.ok(new LoginResponse(localToken, entraUser.email(), entraUser.nome(), role));
+    }
+
+    private boolean isBloggerAutorizado(String email) {
+        if (bloggerEmailsConfig != null && !bloggerEmailsConfig.isBlank()) {
+            List<String> emails = Arrays.stream(bloggerEmailsConfig.split(","))
+                    .map(String::trim)
+                    .map(String::toLowerCase)
+                    .toList();
+            if (emails.contains(email)) return true;
+        }
+
+        if (bloggerDomainsConfig != null && !bloggerDomainsConfig.isBlank()) {
+            List<String> domains = Arrays.stream(bloggerDomainsConfig.split(","))
+                    .map(String::trim)
+                    .map(String::toLowerCase)
+                    .toList();
+            for (String domain : domains) {
+                if (!domain.isEmpty() && email.endsWith("@" + domain.replace("@", ""))) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
