@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,6 +16,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -40,7 +42,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String email = jwtService.extractEmail(jwt);
 
                 if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    // Todos os usuários autenticados via allowlist recebem autoridade de ADMIN
                     SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_ADMIN");
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             email,
@@ -49,10 +50,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                    log.debug("Autenticação válida no Spring Security para o usuário: {}", email);
                 }
+            } else {
+                log.warn("Token JWT inválido ou expirado recebido na requisição: {}", request.getRequestURI());
             }
         } catch (Exception e) {
-            logger.warn("Falha na validação do token JWT: " + e.getMessage());
+            log.error("Erro na validação do token JWT na requisição {}: {}", request.getRequestURI(), e.getMessage());
         }
 
         filterChain.doFilter(request, response);
