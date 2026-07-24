@@ -5,6 +5,7 @@ import br.com.infodive.infodive_api.entity.LogAuditoria;
 import br.com.infodive.infodive_api.mapper.LogAuditoriaMapper;
 import br.com.infodive.infodive_api.repository.LogAuditoriaRepository;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -19,6 +20,9 @@ public class LogAuditoriaService {
 
     private final LogAuditoriaRepository repository;
     private final LogAuditoriaMapper mapper;
+
+    // Cache simples em memória para evitar registros duplicados em curto intervalo (< 2s)
+    private static final ConcurrentHashMap<String, Long> RECENT_LOGS = new ConcurrentHashMap<>();
 
     @Transactional(readOnly = true)
     public List<LogAuditoriaResponse> findAll() {
@@ -39,6 +43,16 @@ public class LogAuditoriaService {
                 usuarioEmail = auth.getName();
                 usuarioNome = usuarioEmail.contains("@") ? usuarioEmail.split("@")[0] : usuarioEmail;
             }
+
+            // Deduplicação: ignora requisições idênticas disparadas em menos de 2 segundos (ex: dupla requisição HTTP ou AOP + chamada manual)
+            String dedupeKey = usuarioEmail + ":" + acao + ":" + recurso + ":" + (recursoId != null ? recursoId : "");
+            long now = System.currentTimeMillis();
+            Long lastTime = RECENT_LOGS.get(dedupeKey);
+            if (lastTime != null && (now - lastTime) < 2000) {
+                log.debug("[AUDITORIA DUP] Registro duplicado ignorado (<2s): {}", dedupeKey);
+                return;
+            }
+            RECENT_LOGS.put(dedupeKey, now);
 
             LogAuditoria logEntry = LogAuditoria.builder()
                     .usuarioEmail(usuarioEmail)

@@ -3,19 +3,23 @@ package br.com.infodive.infodive_api.config;
 import br.com.infodive.infodive_api.service.LogAuditoriaService;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.stereotype.Component;
 
 @Slf4j
 @Aspect
-@org.springframework.stereotype.Component
+@Component
 @RequiredArgsConstructor
 public class AuditoriaAspect {
 
     private final LogAuditoriaService logAuditoriaService;
+
+    private static final Pattern UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
 
     private static final Map<String, String> MODULO_NAMES = Map.ofEntries(
             Map.entry("ProdutoService", "Produtos"),
@@ -54,8 +58,12 @@ public class AuditoriaAspect {
         if (isIgnoredService(serviceClassName)) return;
 
         String recurso = MODULO_NAMES.getOrDefault(serviceClassName, serviceClassName.replace("Service", ""));
-        String entityId = extractIdOrName(result);
-        String detalhes = "Criou novo registro em " + recurso + (entityId != null ? " (" + entityId + ")" : "");
+        String itemLabel = extractHumanLabel(result, joinPoint.getArgs());
+        String entityId = extractUuid(result, joinPoint.getArgs());
+
+        String detalhes = itemLabel != null 
+                ? "Criou " + recurso + ": '" + itemLabel + "'"
+                : "Criou novo registro em " + recurso;
 
         logAuditoriaService.registrar("CRIACAO", recurso, entityId, detalhes);
     }
@@ -69,8 +77,12 @@ public class AuditoriaAspect {
         if (isIgnoredService(serviceClassName)) return;
 
         String recurso = MODULO_NAMES.getOrDefault(serviceClassName, serviceClassName.replace("Service", ""));
-        String entityId = extractIdOrName(result);
-        String detalhes = "Atualizou registro em " + recurso + (entityId != null ? " (" + entityId + ")" : "");
+        String itemLabel = extractHumanLabel(result, joinPoint.getArgs());
+        String entityId = extractUuid(result, joinPoint.getArgs());
+
+        String detalhes = itemLabel != null 
+                ? "Atualizou " + recurso + ": '" + itemLabel + "'"
+                : "Atualizou registro em " + recurso;
 
         logAuditoriaService.registrar("ATUALIZACAO", recurso, entityId, detalhes);
     }
@@ -85,7 +97,11 @@ public class AuditoriaAspect {
         String recurso = MODULO_NAMES.getOrDefault(serviceClassName, serviceClassName.replace("Service", ""));
         Object[] args = joinPoint.getArgs();
         String idStr = args.length > 0 && args[0] != null ? args[0].toString() : null;
-        String detalhes = "Excluiu registro em " + recurso + (idStr != null ? " (ID: " + idStr + ")" : "");
+        String itemLabel = extractHumanLabel(null, args);
+
+        String detalhes = itemLabel != null 
+                ? "Excluiu " + recurso + ": '" + itemLabel + "'"
+                : "Excluiu registro em " + recurso + (idStr != null ? " (ID: " + idStr + ")" : "");
 
         logAuditoriaService.registrar("EXCLUSAO", recurso, idStr, detalhes);
     }
@@ -98,33 +114,75 @@ public class AuditoriaAspect {
                "AdminAutorizadoService".equals(serviceClassName);
     }
 
-    private String extractIdOrName(Object object) {
-        if (object == null) return null;
-        try {
-            // Tenta obter getId()
-            Method getIdMethod = null;
-            try {
-                getIdMethod = object.getClass().getMethod("id");
-            } catch (NoSuchMethodException e) {
-                try {
-                    getIdMethod = object.getClass().getMethod("getId");
-                } catch (NoSuchMethodException ignored) {}
-            }
-            if (getIdMethod != null) {
-                Object val = getIdMethod.invoke(object);
-                if (val != null) return val.toString();
-            }
+    private String extractHumanLabel(Object resultObj, Object[] args) {
+        String label = searchFields(resultObj);
+        if (label != null) return label;
 
-            // Tenta obter getNome() ou nome() ou getTitulo() ou titulo() ou getSlug()
-            for (String fieldName : new String[]{"nome", "getNome", "titulo", "getTitulo", "slug", "getSlug"}) {
-                try {
-                    Method m = object.getClass().getMethod(fieldName);
-                    Object val = m.invoke(object);
-                    if (val != null) return val.toString();
-                } catch (NoSuchMethodException ignored) {}
+        if (args != null) {
+            for (Object arg : args) {
+                label = searchFields(arg);
+                if (label != null) return label;
             }
-        } catch (Exception e) {
-            log.trace("Não foi possível extrair ID ou nome do objeto de resultado: {}", e.getMessage());
+        }
+        return null;
+    }
+
+    private String searchFields(Object obj) {
+        if (obj == null) return null;
+        String[] candidateMethods = {
+            "pagina", "getPagina",
+            "nome", "getNome",
+            "titulo", "getTitulo",
+            "headline", "getHeadline",
+            "eyebrow", "getEyebrow",
+            "pergunta", "getPergunta",
+            "secao", "getSecao",
+            "empresaNome", "getEmpresaNome",
+            "empresa", "getEmpresa",
+            "email", "getEmail",
+            "slug", "getSlug"
+        };
+
+        for (String methodName : candidateMethods) {
+            try {
+                Method m = obj.getClass().getMethod(methodName);
+                Object val = m.invoke(obj);
+                if (val != null) {
+                    String str = val.toString().trim();
+                    if (!str.isBlank() && !UUID_PATTERN.matcher(str).matches()) {
+                        return str;
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+        return null;
+    }
+
+    private String extractUuid(Object resultObj, Object[] args) {
+        if (resultObj != null) {
+            String id = searchIdMethod(resultObj);
+            if (id != null) return id;
+        }
+        if (args != null) {
+            for (Object arg : args) {
+                if (arg != null && UUID_PATTERN.matcher(arg.toString()).matches()) {
+                    return arg.toString();
+                }
+                String id = searchIdMethod(arg);
+                if (id != null) return id;
+            }
+        }
+        return null;
+    }
+
+    private String searchIdMethod(Object obj) {
+        if (obj == null) return null;
+        for (String mName : new String[]{"id", "getId"}) {
+            try {
+                Method m = obj.getClass().getMethod(mName);
+                Object val = m.invoke(obj);
+                if (val != null) return val.toString();
+            } catch (Exception ignored) {}
         }
         return null;
     }
