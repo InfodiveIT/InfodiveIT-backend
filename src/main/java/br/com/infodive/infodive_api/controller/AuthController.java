@@ -3,7 +3,6 @@ package br.com.infodive.infodive_api.controller;
 import br.com.infodive.infodive_api.dto.request.LoginRequest;
 import br.com.infodive.infodive_api.dto.response.LoginResponse;
 import br.com.infodive.infodive_api.exception.AcessoNegadoException;
-import br.com.infodive.infodive_api.service.AdminAutorizadoService;
 import br.com.infodive.infodive_api.service.JwtService;
 import br.com.infodive.infodive_api.service.MicrosoftEntraIdService;
 import br.com.infodive.infodive_api.service.MicrosoftEntraIdService.EntraIdUser;
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final MicrosoftEntraIdService entraIdService;
-    private final AdminAutorizadoService adminService;
     private final JwtService jwtService;
 
     @PostMapping("/login")
@@ -30,15 +28,12 @@ public class AuthController {
         EntraIdUser entraUser = entraIdService.validateAndExtract(request.idToken());
 
         // 2. Valida se o e-mail pertence ao domínio corporativo @infodive.com.br
-        String emailLower = entraUser.email().toLowerCase();
+        String emailLower = entraUser.email().toLowerCase().trim();
         if (!emailLower.endsWith("@infodive.com.br")) {
             throw new AcessoNegadoException("Acesso negado: Apenas contas corporativas com domínio @infodive.com.br têm permissão de acesso ao painel.");
         }
 
-        // 3. Cadastra/Garante autorização para qualquer e-mail válido do domínio @infodive.com.br
-        adminService.ensureEmailAuthorized(entraUser.email(), entraUser.nome());
-
-        // 3. Gera o JWT local assinado pelo sistema
+        // 3. Gera o JWT local assinado pelo sistema para consumo das APIs administrativas
         String localToken = jwtService.generateToken(entraUser.email(), entraUser.nome());
 
         return ResponseEntity.ok(new LoginResponse(localToken, entraUser.email(), entraUser.nome()));
