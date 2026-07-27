@@ -47,10 +47,6 @@ public class Conteudo {
     @Column(nullable = false)
     private TipoConteudo tipo;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private OrigemConteudo origem;
-
     @Column(columnDefinition = "TEXT")
     private String descricao;
 
@@ -63,9 +59,6 @@ public class Conteudo {
 
     @Column(name = "url_externa")
     private String urlExterna;
-
-    @Column(name = "social_post_id")
-    private String socialPostId;
 
     private String autor;
 

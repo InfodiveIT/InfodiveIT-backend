@@ -5,6 +5,5 @@ public enum TipoConteudo {
     WHITEPAPER,
     CASE,
     DATASHEET,
-    VIDEO,
-    POST_SOCIAL
+    VIDEO
 }

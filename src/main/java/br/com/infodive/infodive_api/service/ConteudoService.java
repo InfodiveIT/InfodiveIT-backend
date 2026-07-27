@@ -3,7 +3,6 @@ package br.com.infodive.infodive_api.service;
 import br.com.infodive.infodive_api.dto.request.ConteudoRequest;
 import br.com.infodive.infodive_api.dto.response.ConteudoResponse;
 import br.com.infodive.infodive_api.entity.Conteudo;
-import br.com.infodive.infodive_api.entity.OrigemConteudo;
 import br.com.infodive.infodive_api.entity.TipoConteudo;
 import br.com.infodive.infodive_api.exception.ResourceNotFoundException;
 import br.com.infodive.infodive_api.mapper.ConteudoMapper;
@@ -36,11 +35,11 @@ public class ConteudoService {
     private final ObjectMapper objectMapper;
     private final SupabaseStorageService supabaseStorageService;
 
-    @Cacheable(value = "conteudos", key = "(#tipo ?: 'all') + '-' + (#origem ?: 'all') + '-' + (#destaque ?: 'all') + '-' + #page + '-' + #size")
+    @Cacheable(value = "conteudos", key = "(#tipo ?: 'all') + '-' + (#destaque ?: 'all') + '-' + #page + '-' + #size")
     @Transactional(readOnly = true)
-    public Page<ConteudoResponse> findAll(TipoConteudo tipo, OrigemConteudo origem, Boolean destaque, int page, int size) {
+    public Page<ConteudoResponse> findAll(TipoConteudo tipo, Boolean destaque, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return conteudoRepository.findAllWithFilters(tipo, origem, destaque, pageable)
+        return conteudoRepository.findAllWithFilters(tipo, destaque, pageable)
                 .map(conteudoMapper::toResponse);
     }
 
@@ -67,12 +66,10 @@ public class ConteudoService {
                 .titulo(request.titulo())
                 .slug(request.slug())
                 .tipo(request.tipo())
-                .origem(request.origem())
                 .descricao(request.descricao())
                 .conteudo(parseConteudo(request.conteudo()))
                 .imagemUrl(request.imagemUrl())
                 .urlExterna(request.urlExterna())
-                .socialPostId(request.socialPostId())
                 .autor(request.autor())
                 .tempoLeitura(request.tempoLeitura())
                 .publicadoEm(request.publicadoEm())
@@ -94,12 +91,10 @@ public class ConteudoService {
         conteudo.setTitulo(request.titulo());
         conteudo.setSlug(request.slug());
         conteudo.setTipo(request.tipo());
-        conteudo.setOrigem(request.origem());
         conteudo.setDescricao(request.descricao());
         conteudo.setConteudo(parseConteudo(request.conteudo()));
         conteudo.setImagemUrl(request.imagemUrl());
         conteudo.setUrlExterna(request.urlExterna());
-        conteudo.setSocialPostId(request.socialPostId());
         conteudo.setAutor(request.autor());
         conteudo.setTempoLeitura(request.tempoLeitura());
         conteudo.setPublicadoEm(request.publicadoEm());
@@ -151,8 +146,8 @@ public class ConteudoService {
             }
         }
         
-        if (projetado < 1) {
-            throw new br.com.infodive.infodive_api.exception.BusinessException("Deve haver no mínimo 1 artigo em destaque na página inicial.");
+        if ((jaEraDestaqueAtivo && (!novoDestaque || !novoAtivo)) && projetado < 2) {
+            throw new br.com.infodive.infodive_api.exception.BusinessException("Deve haver no mínimo 2 artigos em destaque na página inicial.");
         }
         if (projetado > 3) {
             throw new br.com.infodive.infodive_api.exception.BusinessException("Não é permitido destacar mais de 3 artigos na página inicial.");

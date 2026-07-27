@@ -1,6 +1,5 @@
 package br.com.infodive.infodive_api.dto.response;
 
-import br.com.infodive.infodive_api.entity.OrigemConteudo;
 import br.com.infodive.infodive_api.entity.TipoConteudo;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -13,14 +12,12 @@ public record ConteudoResponse(
         String titulo,
         String slug,
         TipoConteudo tipo,
-        OrigemConteudo origem,
         String descricao,
         String imagemUrl,
         String autor,
         String tempoLeitura,
         String conteudo,
         String urlExterna,
-        String socialPostId,
         LocalDateTime publicadoEm,
         boolean ativo,
         boolean destaque,

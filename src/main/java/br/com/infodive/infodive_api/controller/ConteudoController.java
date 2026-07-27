@@ -2,7 +2,6 @@ package br.com.infodive.infodive_api.controller;
 
 import br.com.infodive.infodive_api.dto.request.ConteudoRequest;
 import br.com.infodive.infodive_api.dto.response.ConteudoResponse;
-import br.com.infodive.infodive_api.entity.OrigemConteudo;
 import br.com.infodive.infodive_api.entity.TipoConteudo;
 import br.com.infodive.infodive_api.service.ConteudoService;
 import jakarta.validation.Valid;
@@ -31,11 +30,10 @@ public class ConteudoController {
     @GetMapping
     public ResponseEntity<Page<ConteudoResponse>> findAll(
             @RequestParam(required = false) TipoConteudo tipo,
-            @RequestParam(required = false) OrigemConteudo origem,
             @RequestParam(required = false) Boolean destaque,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "9") int size) {
-        return ResponseEntity.ok(conteudoService.findAll(tipo, origem, destaque, page, size));
+        return ResponseEntity.ok(conteudoService.findAll(tipo, destaque, page, size));
     }
 
     @GetMapping("/{identifier}")
