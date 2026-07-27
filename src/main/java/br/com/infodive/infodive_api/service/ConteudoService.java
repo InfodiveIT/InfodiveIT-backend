@@ -3,6 +3,7 @@ package br.com.infodive.infodive_api.service;
 import br.com.infodive.infodive_api.dto.request.ConteudoRequest;
 import br.com.infodive.infodive_api.dto.response.ConteudoResponse;
 import br.com.infodive.infodive_api.entity.Conteudo;
+import br.com.infodive.infodive_api.entity.Produto;
 import br.com.infodive.infodive_api.entity.TipoConteudo;
 import br.com.infodive.infodive_api.exception.ResourceNotFoundException;
 import br.com.infodive.infodive_api.mapper.ConteudoMapper;
@@ -170,17 +171,20 @@ public class ConteudoService {
     }
 
     private void aplicarRelacionamentos(Conteudo conteudo, ConteudoRequest request) {
-        conteudo.setCategoria(request.categoriaId() == null ? null
-                : solucaoRepository.findById(request.categoriaId())
-                        .orElseThrow(() -> new ResourceNotFoundException(
-                                "Categoria não encontrada: " + request.categoriaId())));
-        conteudo.setFabricante(request.fabricanteId() == null ? null
-                : fabricanteRepository.findById(request.fabricanteId())
-                        .orElseThrow(() -> new ResourceNotFoundException(
-                                "Fabricante não encontrado: " + request.fabricanteId())));
-        conteudo.setProduto(request.produtoId() == null ? null
+        Produto produto = request.produtoId() == null ? null
                 : produtoRepository.findById(request.produtoId())
                         .orElseThrow(() -> new ResourceNotFoundException(
-                                "Produto não encontrado: " + request.produtoId())));
+                                "Produto não encontrado: " + request.produtoId()));
+        conteudo.setProduto(produto);
+
+        if (produto != null) {
+            conteudo.setCategoria(produto.getSolucao());
+            conteudo.setFabricante(produto.getFabricante());
+        } else {
+            conteudo.setCategoria(request.categoriaId() == null ? null
+                    : solucaoRepository.findById(request.categoriaId()).orElse(null));
+            conteudo.setFabricante(request.fabricanteId() == null ? null
+                    : fabricanteRepository.findById(request.fabricanteId()).orElse(null));
+        }
     }
 }
