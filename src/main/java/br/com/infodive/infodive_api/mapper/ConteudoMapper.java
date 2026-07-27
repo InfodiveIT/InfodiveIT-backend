@@ -24,7 +24,7 @@ public class ConteudoMapper {
                 entity.getImagemUrl(),
                 entity.getAutor(),
                 entity.getTempoLeitura(),
-                toJson(entity.getConteudo()),
+                entity.getConteudo(),
                 entity.getUrlExterna(),
                 entity.getPublicadoEm(),
                 entity.isAtivo(),

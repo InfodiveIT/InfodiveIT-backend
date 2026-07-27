@@ -68,7 +68,7 @@ public class ConteudoService {
                 .slug(request.slug())
                 .tipo(request.tipo())
                 .descricao(request.descricao())
-                .conteudo(parseConteudo(request.conteudo()))
+                .conteudo(request.conteudo())
                 .imagemUrl(request.imagemUrl())
                 .urlExterna(request.urlExterna())
                 .autor(request.autor())
@@ -93,7 +93,7 @@ public class ConteudoService {
         conteudo.setSlug(request.slug());
         conteudo.setTipo(request.tipo());
         conteudo.setDescricao(request.descricao());
-        conteudo.setConteudo(parseConteudo(request.conteudo()));
+        conteudo.setConteudo(request.conteudo());
         conteudo.setImagemUrl(request.imagemUrl());
         conteudo.setUrlExterna(request.urlExterna());
         conteudo.setAutor(request.autor());
@@ -152,21 +152,6 @@ public class ConteudoService {
         }
         if (projetado > 3) {
             throw new br.com.infodive.infodive_api.exception.BusinessException("Não é permitido destacar mais de 3 artigos na página inicial.");
-        }
-    }
-
-    private List<ConteudoBloco> parseConteudo(Object conteudoObj) {
-        if (conteudoObj == null) {
-            return null;
-        }
-        try {
-            if (conteudoObj instanceof String str) {
-                if (str.isBlank()) return null;
-                return objectMapper.readValue(str, new com.fasterxml.jackson.core.type.TypeReference<List<ConteudoBloco>>() {});
-            }
-            return objectMapper.convertValue(conteudoObj, new com.fasterxml.jackson.core.type.TypeReference<List<ConteudoBloco>>() {});
-        } catch (Exception e) {
-            throw new br.com.infodive.infodive_api.exception.BusinessException("Formato de conteúdo inválido: " + e.getMessage());
         }
     }
 

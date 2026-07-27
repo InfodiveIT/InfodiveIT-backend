@@ -13,7 +13,7 @@ public record ConteudoRequest(
         String slug,
         @NotNull TipoConteudo tipo,
         String descricao,
-        Object conteudo,
+        String conteudo,
         String imagemUrl,
         String urlExterna,
         String autor,

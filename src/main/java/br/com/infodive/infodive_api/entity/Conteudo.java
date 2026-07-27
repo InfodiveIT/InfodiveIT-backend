@@ -50,9 +50,8 @@ public class Conteudo {
     @Column(columnDefinition = "TEXT")
     private String descricao;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private List<ConteudoBloco> conteudo;
+    @Column(columnDefinition = "TEXT")
+    private String conteudo;
 
     @Column(name = "imagem_url")
     private String imagemUrl;
