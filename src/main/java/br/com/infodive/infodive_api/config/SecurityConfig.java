@@ -66,6 +66,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/home-seguranca-marquee/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/home-problemas/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/home-trust-stats/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/politicas/**").permitAll()
                         // Lead: POST público
                         .requestMatchers(HttpMethod.POST, "/leads").permitAll()
                         // Módulo Blog & Uploads: Acessível por ADMIN e BLOGGER
