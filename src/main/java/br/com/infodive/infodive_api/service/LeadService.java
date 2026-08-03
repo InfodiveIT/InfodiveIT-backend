@@ -9,6 +9,7 @@ import br.com.infodive.infodive_api.mapper.LeadMapper;
 import br.com.infodive.infodive_api.repository.LeadRepository;
 import br.com.infodive.infodive_api.repository.ProdutoRepository;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,5 +48,12 @@ public class LeadService {
                 .stream()
                 .map(leadMapper::toResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public LeadResponse findById(UUID id) {
+        return leadRepository.findById(id)
+                .map(leadMapper::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Lead não encontrado: " + id));
     }
 }

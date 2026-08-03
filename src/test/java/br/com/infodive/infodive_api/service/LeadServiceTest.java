@@ -101,4 +101,29 @@ class LeadServiceTest {
         assertEquals(1, list.size());
         assertEquals("João Silva", list.get(0).nomeCompleto());
     }
+
+    @Test
+    void findById_ShouldReturnLeadWhenExists() {
+        LeadResponse responseDto = new LeadResponse(
+                lead.getId(), "João Silva", "joao@empresa.com.br", "(11) 99999-8888",
+                "Empresa X", "CTO", "Gostaria de saber mais", true, null, LocalDateTime.now()
+        );
+
+        when(leadRepository.findById(lead.getId())).thenReturn(Optional.of(lead));
+        when(leadMapper.toResponse(lead)).thenReturn(responseDto);
+
+        LeadResponse result = leadService.findById(lead.getId());
+
+        assertNotNull(result);
+        assertEquals(lead.getId(), result.id());
+        assertEquals("João Silva", result.nomeCompleto());
+    }
+
+    @Test
+    void findById_ShouldThrowExceptionWhenNotFound() {
+        UUID id = UUID.randomUUID();
+        when(leadRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> leadService.findById(id));
+    }
 }

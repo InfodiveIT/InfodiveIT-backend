@@ -87,4 +87,21 @@ class LeadControllerTest {
                 .andExpect(jsonPath("$[0].id").value(leadId.toString()))
                 .andExpect(jsonPath("$[0].nomeCompleto").value("Maria Souza"));
     }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void findLeadById_ShouldReturnLeadWhenAuthenticated() throws Exception {
+        UUID leadId = UUID.randomUUID();
+        LeadResponse response = new LeadResponse(
+                leadId, "Maria Souza", "maria@empresa.com.br", "(11) 98888-7777",
+                "Empresa Y", "Diretora", "Mensagem", true, null, LocalDateTime.now()
+        );
+
+        when(leadService.findById(leadId)).thenReturn(response);
+
+        mockMvc.perform(get("/leads/{id}", leadId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(leadId.toString()))
+                .andExpect(jsonPath("$.nomeCompleto").value("Maria Souza"));
+    }
 }
