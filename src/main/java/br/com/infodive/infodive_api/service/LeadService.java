@@ -21,6 +21,7 @@ public class LeadService {
     private final LeadRepository leadRepository;
     private final ProdutoRepository produtoRepository;
     private final LeadMapper leadMapper;
+    private final EmailService emailService;
 
     @Transactional
     public LeadCreatedResponse create(LeadRequest request) {
@@ -39,6 +40,7 @@ public class LeadService {
                             "Produto não encontrado: " + request.produtoInteresseId())));
         }
         Lead salvo = leadRepository.save(lead);
+        emailService.enviarNotificacaoNovoLead(salvo);
         return new LeadCreatedResponse(salvo.getId(), "Lead recebido com sucesso");
     }
 

@@ -32,6 +32,8 @@ class LeadServiceTest {
     private ProdutoRepository produtoRepository;
     @Mock
     private LeadMapper leadMapper;
+    @Mock
+    private EmailService emailService;
 
     @InjectMocks
     private LeadService leadService;
