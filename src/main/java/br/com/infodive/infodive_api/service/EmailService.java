@@ -33,6 +33,9 @@ public class EmailService {
     @Value("${resend.api-key:${RESEND_API_KEY:}}")
     private String resendApiKey;
 
+    @Value("${resend.from-email:${RESEND_FROM_EMAIL:Infodive IT <onboarding@resend.dev>}}")
+    private String resendFromEmail;
+
     @Value("${sendgrid.api-key:${SENDGRID_API_KEY:}}")
     private String sendGridApiKey;
 
@@ -96,8 +99,8 @@ public class EmailService {
     private boolean enviarViaResendApi(String assunto, String htmlBody, Lead lead) {
         try {
             HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
-            String sender = (fromEmail != null && !fromEmail.isBlank()) ? fromEmail : "onboarding@resend.dev";
-            String replyTo = (lead.getEmail() != null && !lead.getEmail().isBlank()) ? lead.getEmail() : sender;
+            String sender = (resendFromEmail != null && !resendFromEmail.isBlank()) ? resendFromEmail : "Infodive IT <onboarding@resend.dev>";
+            String replyTo = (lead.getEmail() != null && !lead.getEmail().isBlank()) ? lead.getEmail() : recipientEmail;
 
             String jsonPayload = String.format(
                 "{\"from\":\"%s\",\"to\":[\"%s\"],\"reply_to\":\"%s\",\"subject\":\"%s\",\"html\":%s}",
