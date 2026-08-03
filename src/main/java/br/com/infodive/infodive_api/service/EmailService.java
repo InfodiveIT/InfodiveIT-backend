@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.format.DateTimeFormatter;
@@ -24,6 +25,7 @@ public class EmailService {
     @Value("${spring.mail.username:}")
     private String fromEmail;
 
+    @Async
     public void enviarNotificacaoNovoLead(Lead lead) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -31,6 +33,9 @@ public class EmailService {
 
             String sender = (fromEmail != null && !fromEmail.isBlank()) ? fromEmail : "noreply@infodive.com.br";
             helper.setFrom(sender);
+            if (lead.getEmail() != null && !lead.getEmail().isBlank()) {
+                helper.setReplyTo(lead.getEmail());
+            }
             helper.setTo(recipientEmail);
             helper.setSubject("Novo Lead Recebido Através do Site Infodive: " + lead.getNomeCompleto() + " (" + lead.getEmpresa() + ")");
 
@@ -78,7 +83,7 @@ public class EmailService {
             mailSender.send(message);
             log.info("Notificação por e-mail enviada com sucesso para {} referente ao lead ID: {}", recipientEmail, lead.getId());
         } catch (Exception e) {
-            log.error("Erro ao enviar e-mail de notificação de novo lead (ID: {}): {}", lead.getId(), e.getMessage());
+            log.error("Erro ao enviar e-mail de notificação de novo lead (ID: {}): {}", lead.getId(), e.getMessage(), e);
         }
     }
 
