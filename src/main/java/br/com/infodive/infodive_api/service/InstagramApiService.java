@@ -33,6 +33,18 @@ public class InstagramApiService {
         String token = (configAccessToken != null && !configAccessToken.isBlank()) ? configAccessToken.trim() : (envAccessToken != null ? envAccessToken.trim() : "");
         String accountId = (configAccountId != null && !configAccountId.isBlank()) ? configAccountId.trim() : (envAccountId != null ? envAccountId.trim() : "");
 
+        if (token.isBlank()) {
+            String sys = System.getenv("SOCIAL_INSTAGRAM_ACCESS_TOKEN");
+            if (sys == null || sys.isBlank()) sys = System.getenv("INSTAGRAM_ACCESS_TOKEN");
+            if (sys != null && !sys.isBlank()) token = sys.trim();
+        }
+
+        if (accountId.isBlank()) {
+            String sys = System.getenv("SOCIAL_INSTAGRAM_ACCOUNT_ID");
+            if (sys == null || sys.isBlank()) sys = System.getenv("INSTAGRAM_ACCOUNT_ID");
+            if (sys != null && !sys.isBlank()) accountId = sys.trim();
+        }
+
         if (token.isBlank() || accountId.isBlank()) {
             log.info("Instagram Graph API: credenciais não configuradas (token ou accountId ausentes). Ignorando busca remota.");
             return List.of();

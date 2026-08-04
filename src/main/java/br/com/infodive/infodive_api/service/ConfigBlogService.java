@@ -15,17 +15,24 @@ public class ConfigBlogService {
 
     private final ConfigBlogRepository configBlogRepository;
 
+    @Transactional
+    public ConfigBlogResponse getOrCreate() {
+        ConfigBlog entity = configBlogRepository.findAll().stream().findFirst()
+                .orElseGet(() -> configBlogRepository.save(ConfigBlog.builder().build()));
+        return toResponse(entity);
+    }
+
     @Transactional(readOnly = true)
     public ConfigBlogResponse get() {
         return configBlogRepository.findAll().stream().findFirst()
                 .map(this::toResponse)
-                .orElseThrow(() -> new ResourceNotFoundException("Configuração de blog não encontrada"));
+                .orElseGet(() -> new ConfigBlogResponse(null, null, null, null, null, null, null, null, null, null, null));
     }
 
     @Transactional
     public ConfigBlogResponse update(ConfigBlogRequest request) {
         ConfigBlog entity = configBlogRepository.findAll().stream().findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("Configuração de blog não encontrada"));
+                .orElseGet(() -> ConfigBlog.builder().build());
         entity.setArtigosEyebrow(request.artigosEyebrow());
         entity.setArtigosHeadline(request.artigosHeadline());
         entity.setSocialEyebrow(request.socialEyebrow());
