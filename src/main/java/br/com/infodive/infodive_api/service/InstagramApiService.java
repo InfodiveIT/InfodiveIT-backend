@@ -45,43 +45,74 @@ public class InstagramApiService {
             if (sys != null && !sys.isBlank()) accountId = sys.trim();
         }
 
-        if (token.isBlank() || accountId.isBlank()) {
-            log.info("Instagram Graph API: credenciais não configuradas (token ou accountId ausentes). Ignorando busca remota.");
+        if (token.isBlank()) {
+            log.info("Instagram Graph API: Access Token não configurado.");
             return List.of();
         }
 
-        log.info("Instagram Graph API: tentando buscar posts para accountId: {}", accountId);
+        String fields = "id,caption,media_type,media_url,permalink,timestamp,like_count,comments_count,thumbnail_url";
 
-        // Tentar primeiro com todos os campos detalhados
-        try {
-            return doFetch(accountId, token, "id,caption,media_type,media_url,permalink,timestamp,like_count,comments_count,thumbnail_url");
-        } catch (HttpStatusCodeException e) {
-            log.warn("Instagram Graph API: erro HTTP ao buscar com campos completos. Response: {}", e.getResponseBodyAsString());
-            // Fallback com campos essenciais em caso de restrição de campo pela Meta
+        // Estratégia 1: Se temos accountId, tenta GET /{accountId}/media
+        if (!accountId.isBlank()) {
             try {
-                log.info("Instagram Graph API: tentando fallback com campos básicos...");
-                return doFetch(accountId, token, "id,caption,media_type,media_url,permalink,timestamp");
+                log.info("Instagram Graph API [Estratégia 1]: buscando /{}/media", accountId);
+                return doFetch("https://graph.facebook.com/v20.0/" + accountId + "/media", token, fields);
+            } catch (HttpStatusCodeException e) {
+                log.warn("Instagram Graph API [Estratégia 1] falhou (HTTP {}): {}", e.getStatusCode(), e.getResponseBodyAsString());
+                
+                // Estratégia 2: Se accountId for o ID da Página do Facebook, busca o ID do Instagram vinculado
+                try {
+                    log.info("Instagram Graph API [Estratégia 2]: buscando instagram_business_account para ID {}", accountId);
+                    String pageUrl = UriComponentsBuilder
+                            .fromHttpUrl("https://graph.facebook.com/v20.0/" + accountId)
+                            .queryParam("fields", "instagram_business_account")
+                            .queryParam("access_token", token)
+                            .toUriString();
+                    JsonNode pageResp = restTemplate.getForObject(pageUrl, JsonNode.class);
+                    if (pageResp != null && pageResp.has("instagram_business_account") && pageResp.get("instagram_business_account").has("id")) {
+                        String realIgId = pageResp.get("instagram_business_account").get("id").asText();
+                        log.info("Instagram Graph API [Estratégia 2]: ID real do Instagram encontrado: {}", realIgId);
+                        return doFetch("https://graph.facebook.com/v20.0/" + realIgId + "/media", token, fields);
+                    }
+                } catch (Exception ex) {
+                    log.warn("Instagram Graph API [Estratégia 2] falhou: {}", ex.getMessage());
+                }
+            } catch (Exception e) {
+                log.warn("Instagram Graph API [Estratégia 1] erro genérico: {}", e.getMessage());
+            }
+        }
+
+        // Estratégia 3: Tenta GET /me/media diretamente usando o token
+        try {
+            log.info("Instagram Graph API [Estratégia 3]: buscando /me/media via token");
+            return doFetch("https://graph.facebook.com/v20.0/me/media", token, fields);
+        } catch (HttpStatusCodeException e) {
+            log.error("Instagram Graph API [Estratégia 3] falhou (HTTP {}): {}", e.getStatusCode(), e.getResponseBodyAsString());
+            
+            // Tentativa final com campos reduzidos em /me/media
+            try {
+                log.info("Instagram Graph API [Estratégia 3 Fallback]: buscando /me/media com campos básicos");
+                return doFetch("https://graph.facebook.com/v20.0/me/media", token, "id,caption,media_type,media_url,permalink,timestamp");
             } catch (Exception ex) {
-                log.error("Instagram Graph API: falha no fallback básico: {}", ex.getMessage());
-                return List.of();
+                log.error("Instagram Graph API [Estratégia 3 Fallback] falhou: {}", ex.getMessage());
             }
         } catch (Exception e) {
-            log.error("Erro ao buscar posts do Instagram: {}", e.getMessage(), e);
-            return List.of();
+            log.error("Instagram Graph API erro final: {}", e.getMessage(), e);
         }
+
+        return List.of();
     }
 
-    private List<RedeSocialPost> doFetch(String accountId, String token, String fields) {
+    private List<RedeSocialPost> doFetch(String baseUrl, String token, String fields) {
         String url = UriComponentsBuilder
-                .fromHttpUrl("https://graph.facebook.com/v20.0/{accountId}/media")
+                .fromHttpUrl(baseUrl)
                 .queryParam("fields", fields)
                 .queryParam("access_token", token)
-                .buildAndExpand(accountId)
                 .toUriString();
 
         JsonNode response = restTemplate.getForObject(url, JsonNode.class);
         if (response == null || !response.has("data")) {
-            log.warn("Instagram Graph API: resposta vazia ou sem campo 'data'. Response JSON: {}", response);
+            log.warn("Instagram Graph API: resposta vazia ou sem campo 'data' em {}. Response: {}", baseUrl, response);
             return List.of();
         }
 
@@ -127,7 +158,7 @@ public class InstagramApiService {
             posts.add(post);
         }
 
-        log.info("Instagram Graph API: {} posts recuperados com sucesso para accountId: {}.", posts.size(), accountId);
+        log.info("Instagram Graph API: {} posts recuperados com sucesso de {}.", posts.size(), baseUrl);
         return posts;
     }
 }
