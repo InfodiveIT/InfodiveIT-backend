@@ -2,13 +2,16 @@ package br.com.infodive.infodive_api.controller;
 
 import br.com.infodive.infodive_api.dto.request.LoginRequest;
 import br.com.infodive.infodive_api.dto.response.LoginResponse;
+import br.com.infodive.infodive_api.entity.ParceiroToken;
 import br.com.infodive.infodive_api.exception.AcessoNegadoException;
 import br.com.infodive.infodive_api.service.JwtService;
 import br.com.infodive.infodive_api.service.MicrosoftEntraIdService;
 import br.com.infodive.infodive_api.service.MicrosoftEntraIdService.EntraIdUser;
+import br.com.infodive.infodive_api.service.ParceiroTokenService;
 import jakarta.validation.Valid;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +27,7 @@ public class AuthController {
 
     private final MicrosoftEntraIdService entraIdService;
     private final JwtService jwtService;
+    private final ParceiroTokenService parceiroTokenService;
 
     @Value("${auth.blogger-emails:}")
     private String bloggerEmailsConfig;
@@ -36,23 +40,34 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        // 1. Autenticação de Parceiros Externos / Agências (E-mail + Chave de Acesso)
-        if (request.email() != null && !request.email().isBlank() && request.accessKey() != null) {
-            String partnerEmail = request.email().toLowerCase().trim();
+        // 1. Autenticação de Parceiros Externos / Agências via Token do Banco de Dados ou Chave Legada
+        if (request.accessKey() != null && !request.accessKey().isBlank()) {
+            String cleanKey = request.accessKey().trim();
 
-            if (!request.accessKey().equals(partnerAccessKey)) {
-                throw new AcessoNegadoException("Chave de acesso do parceiro inválida.");
+            // 1.1 Tenta validar no novo sistema de ParceiroToken dinâmico
+            Optional<ParceiroToken> parceiroOpt = parceiroTokenService.validarToken(cleanKey);
+            if (parceiroOpt.isPresent()) {
+                ParceiroToken parceiro = parceiroOpt.get();
+                String role = parceiro.getRole() != null ? parceiro.getRole() : "ROLE_BLOGGER";
+                if (!role.startsWith("ROLE_")) {
+                    role = "ROLE_" + role;
+                }
+                String localToken = jwtService.generateToken(parceiro.getEmail(), parceiro.getNomeAgencia(), role);
+                return ResponseEntity.ok(new LoginResponse(localToken, parceiro.getEmail(), parceiro.getNomeAgencia(), role));
             }
 
-            if (!isBloggerAutorizado(partnerEmail)) {
-                throw new AcessoNegadoException("E-mail de parceiro não cadastrado na lista de editores permitidos.");
+            // 1.2 Fallback para chave de acesso legada do Railway (caso ainda utilizada)
+            if (request.email() != null && !request.email().isBlank()) {
+                String partnerEmail = request.email().toLowerCase().trim();
+                if (cleanKey.equals(partnerAccessKey) && isBloggerAutorizado(partnerEmail)) {
+                    String partnerName = partnerEmail.split("@")[0];
+                    String role = "ROLE_BLOGGER";
+                    String localToken = jwtService.generateToken(partnerEmail, partnerName, role);
+                    return ResponseEntity.ok(new LoginResponse(localToken, partnerEmail, partnerName, role));
+                }
             }
 
-            String partnerName = partnerEmail.split("@")[0];
-            String role = "ROLE_BLOGGER";
-            String localToken = jwtService.generateToken(partnerEmail, partnerName, role);
-
-            return ResponseEntity.ok(new LoginResponse(localToken, partnerEmail, partnerName, role));
+            throw new AcessoNegadoException("Token ou chave de acesso de parceiro inválida ou expirada.");
         }
 
         // 2. Autenticação Oficial Microsoft Entra ID (Colaboradores Infodive)
