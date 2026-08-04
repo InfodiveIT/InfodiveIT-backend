@@ -7,5 +7,9 @@ public record ConfigBlogRequest(
         String socialHeadline,
         String socialDescricao,
         String urlInstagram,
-        String urlLinkedin
+        String urlLinkedin,
+        String instagramAccessToken,
+        String instagramAccountId,
+        String linkedinAccessToken,
+        String linkedinOrganizationId
 ) {}

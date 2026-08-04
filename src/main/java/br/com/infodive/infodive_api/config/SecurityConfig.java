@@ -67,10 +67,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/home-problemas/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/home-trust-stats/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/politicas/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/social-posts/**").permitAll()
                         // Lead: POST público
                         .requestMatchers(HttpMethod.POST, "/leads").permitAll()
-                        // Módulo Blog & Uploads: Acessível por ADMIN e BLOGGER
-                        .requestMatchers("/conteudos/**", "/config-blog/**", "/uploads/**").hasAnyRole("ADMIN", "BLOGGER")
+                        // Módulo Blog, Redes Sociais & Uploads: Acessível por ADMIN e BLOGGER
+                        .requestMatchers("/conteudos/**", "/config-blog/**", "/social-posts/sync", "/uploads/**").hasAnyRole("ADMIN", "BLOGGER")
                         // Tudo mais requer perfil completo de ADMIN (Catálogo, Soluções, Serviços, Leads, Auditoria, etc)
                         .anyRequest().hasRole("ADMIN")
                 )

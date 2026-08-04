@@ -33,12 +33,18 @@ public class ConfigBlogService {
         entity.setSocialDescricao(request.socialDescricao());
         entity.setUrlInstagram(request.urlInstagram());
         entity.setUrlLinkedin(request.urlLinkedin());
+        entity.setInstagramAccessToken(request.instagramAccessToken());
+        entity.setInstagramAccountId(request.instagramAccountId());
+        entity.setLinkedinAccessToken(request.linkedinAccessToken());
+        entity.setLinkedinOrganizationId(request.linkedinOrganizationId());
         return toResponse(configBlogRepository.save(entity));
     }
 
     private ConfigBlogResponse toResponse(ConfigBlog e) {
         return new ConfigBlogResponse(
                 e.getArtigosEyebrow(), e.getArtigosHeadline(), e.getSocialEyebrow(), e.getSocialHeadline(),
-                e.getSocialDescricao(), e.getUrlInstagram(), e.getUrlLinkedin());
+                e.getSocialDescricao(), e.getUrlInstagram(), e.getUrlLinkedin(),
+                e.getInstagramAccessToken(), e.getInstagramAccountId(),
+                e.getLinkedinAccessToken(), e.getLinkedinOrganizationId());
     }
 }

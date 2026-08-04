@@ -49,6 +49,18 @@ public class ConfigBlog {
     @Column(name = "url_linkedin")
     private String urlLinkedin;
 
+    @Column(name = "instagram_access_token", columnDefinition = "TEXT")
+    private String instagramAccessToken;
+
+    @Column(name = "instagram_account_id")
+    private String instagramAccountId;
+
+    @Column(name = "linkedin_access_token", columnDefinition = "TEXT")
+    private String linkedinAccessToken;
+
+    @Column(name = "linkedin_organization_id")
+    private String linkedinOrganizationId;
+
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
