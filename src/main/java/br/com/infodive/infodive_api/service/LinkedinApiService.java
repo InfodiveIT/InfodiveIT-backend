@@ -3,6 +3,7 @@ package br.com.infodive.infodive_api.service;
 import br.com.infodive.infodive_api.entity.RedeSocialPost;
 import br.com.infodive.infodive_api.entity.RedeSocialPost.Rede;
 import com.fasterxml.jackson.databind.JsonNode;
+import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -56,48 +57,52 @@ public class LinkedinApiService {
         token = token.replaceAll("\\s+", "").replace("\"", "").replace("'", "").trim();
         orgId = orgId.replaceAll("\\s+", "").replace("\"", "").replace("'", "").trim();
 
-        String cleanOrgId = orgId.startsWith("urn:li:organization:") ? orgId : "urn:li:organization:" + orgId;
-        log.info("LinkedIn API: tentando buscar posts para organização {}", cleanOrgId);
+        String orgIdNum = orgId.replace("urn:li:organization:", "");
+        String cleanOrgUrn = "urn:li:organization:" + orgIdNum;
+        log.info("LinkedIn API: tentando buscar posts para organização {}", cleanOrgUrn);
 
         List<String> urlsToTry = List.of(
-                "https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(" + cleanOrgId + ")",
-                "https://api.linkedin.com/v2/shares?q=owners&owners=" + cleanOrgId,
-                "https://api.linkedin.com/v2/shares?q=owners&owners=List(" + cleanOrgId + ")",
-                "https://api.linkedin.com/rest/posts?author=" + cleanOrgId + "&q=author",
-                "https://api.linkedin.com/v2/posts?author=" + cleanOrgId + "&q=author"
+                "https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(" + cleanOrgUrn + ")",
+                "https://api.linkedin.com/v2/shares?q=owners&owners=" + cleanOrgUrn,
+                "https://api.linkedin.com/v2/shares?q=owners&owners=List(" + cleanOrgUrn + ")",
+                "https://api.linkedin.com/v2/posts?author=" + cleanOrgUrn + "&q=author",
+                "https://api.linkedin.com/rest/posts?author=" + cleanOrgUrn + "&q=author"
         );
 
-        for (String url : urlsToTry) {
+        for (String urlStr : urlsToTry) {
             try {
-                log.info("LinkedIn API: requisitando {}", url);
-                List<RedeSocialPost> posts = doFetch(url, token);
+                log.info("LinkedIn API: requisitando {}", urlStr);
+                URI uri = URI.create(urlStr);
+                List<RedeSocialPost> posts = doFetch(uri, token, urlStr.contains("/rest/"));
                 if (!posts.isEmpty()) {
-                    log.info("LinkedIn API: Sucesso! {} posts recuperados de {}", posts.size(), url);
+                    log.info("LinkedIn API: Sucesso! {} posts recuperados de {}", posts.size(), urlStr);
                     return posts;
                 }
             } catch (HttpStatusCodeException e) {
-                log.warn("LinkedIn API: erro HTTP (code {}) em {}: {}", e.getStatusCode(), url, e.getResponseBodyAsString());
+                log.warn("LinkedIn API: erro HTTP (code {}) em {}: {}", e.getStatusCode(), urlStr, e.getResponseBodyAsString());
             } catch (Exception e) {
-                log.warn("LinkedIn API: falha em {}: {}", url, e.getMessage());
+                log.warn("LinkedIn API: falha em {}: {}", urlStr, e.getMessage());
             }
         }
 
-        log.error("LinkedIn API: todas as tentativas de busca falharam. Verifique as permissões do aplicativo no LinkedIn Developer Portal.");
+        log.error("LinkedIn API: todas as tentativas de busca falharam. Verifique se o produto 'Community Management API' ou 'Share on LinkedIn' está ativo no LinkedIn Developer Portal.");
         return List.of();
     }
 
-    private List<RedeSocialPost> doFetch(String url, String token) {
+    private List<RedeSocialPost> doFetch(URI uri, String token, boolean isRest) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
         headers.set("X-Restli-Protocol-Version", "2.0.0");
-        headers.set("LinkedIn-Version", "202401");
+        if (isRest) {
+            headers.set("LinkedIn-Version", "202401");
+        }
 
         HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
-        ResponseEntity<JsonNode> responseEntity = restTemplate.exchange(url, HttpMethod.GET, requestEntity, JsonNode.class);
+        ResponseEntity<JsonNode> responseEntity = restTemplate.exchange(uri, HttpMethod.GET, requestEntity, JsonNode.class);
 
         JsonNode response = responseEntity.getBody();
         if (response == null || !response.has("elements")) {
-            log.warn("LinkedIn API: resposta sem campo 'elements' em {}. Response: {}", url, response);
+            log.warn("LinkedIn API: resposta sem campo 'elements' em {}. Response: {}", uri, response);
             return List.of();
         }
 
