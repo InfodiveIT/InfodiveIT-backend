@@ -58,15 +58,18 @@ public class LinkedinApiService {
         orgId = orgId.replaceAll("\\s+", "").replace("\"", "").replace("'", "").trim();
 
         String orgIdNum = orgId.replace("urn:li:organization:", "");
-        String cleanOrgUrn = "urn:li:organization:" + orgIdNum;
-        log.info("LinkedIn API: tentando buscar posts para organização {}", cleanOrgUrn);
+        String rawUrn = "urn:li:organization:" + orgIdNum;
+        String encodedUrn = "urn%3Ali%3Aorganization%3A" + orgIdNum;
+
+        log.info("LinkedIn API: tentando buscar posts para organização {}", rawUrn);
 
         List<String> urlsToTry = List.of(
-                "https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(" + cleanOrgUrn + ")",
-                "https://api.linkedin.com/v2/shares?q=owners&owners=" + cleanOrgUrn,
-                "https://api.linkedin.com/v2/shares?q=owners&owners=List(" + cleanOrgUrn + ")",
-                "https://api.linkedin.com/v2/posts?author=" + cleanOrgUrn + "&q=author",
-                "https://api.linkedin.com/rest/posts?author=" + cleanOrgUrn + "&q=author"
+                "https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(" + encodedUrn + ")",
+                "https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(" + rawUrn + ")",
+                "https://api.linkedin.com/v2/shares?q=owners&owners=" + encodedUrn,
+                "https://api.linkedin.com/v2/shares?q=owners&owners=" + rawUrn,
+                "https://api.linkedin.com/rest/posts?author=" + encodedUrn + "&q=author",
+                "https://api.linkedin.com/v2/posts?author=" + encodedUrn + "&q=author"
         );
 
         for (String urlStr : urlsToTry) {
