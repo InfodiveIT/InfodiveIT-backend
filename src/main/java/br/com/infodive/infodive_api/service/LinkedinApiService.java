@@ -18,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 @Service
@@ -58,23 +57,14 @@ public class LinkedinApiService {
         orgId = orgId.replaceAll("\\s+", "").replace("\"", "").replace("'", "").trim();
 
         String cleanOrgId = orgId.startsWith("urn:li:organization:") ? orgId : "urn:li:organization:" + orgId;
-        log.info("LinkedIn API: tentando buscar posts para organzação {}", cleanOrgId);
+        log.info("LinkedIn API: tentando buscar posts para organização {}", cleanOrgId);
 
         List<String> urlsToTry = List.of(
-                UriComponentsBuilder.fromHttpUrl("https://api.linkedin.com/v2/posts")
-                        .queryParam("author", cleanOrgId)
-                        .queryParam("q", "author")
-                        .queryParam("sortBy", "CREATED")
-                        .toUriString(),
-                UriComponentsBuilder.fromHttpUrl("https://api.linkedin.com/v2/shares")
-                        .queryParam("q", "owners")
-                        .queryParam("owners", cleanOrgId)
-                        .queryParam("sharesPerOwner", "50")
-                        .toUriString(),
-                UriComponentsBuilder.fromHttpUrl("https://api.linkedin.com/rest/posts")
-                        .queryParam("author", cleanOrgId)
-                        .queryParam("q", "author")
-                        .toUriString()
+                "https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(" + cleanOrgId + ")",
+                "https://api.linkedin.com/v2/shares?q=owners&owners=" + cleanOrgId,
+                "https://api.linkedin.com/v2/shares?q=owners&owners=List(" + cleanOrgId + ")",
+                "https://api.linkedin.com/rest/posts?author=" + cleanOrgId + "&q=author",
+                "https://api.linkedin.com/v2/posts?author=" + cleanOrgId + "&q=author"
         );
 
         for (String url : urlsToTry) {
@@ -92,7 +82,7 @@ public class LinkedinApiService {
             }
         }
 
-        log.error("LinkedIn API: todas as tentativas de busca falharam. Verifique permissões do Token.");
+        log.error("LinkedIn API: todas as tentativas de busca falharam. Verifique as permissões do aplicativo no LinkedIn Developer Portal.");
         return List.of();
     }
 
@@ -100,7 +90,7 @@ public class LinkedinApiService {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
         headers.set("X-Restli-Protocol-Version", "2.0.0");
-        headers.set("LinkedIn-Version", "202304");
+        headers.set("LinkedIn-Version", "202401");
 
         HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
         ResponseEntity<JsonNode> responseEntity = restTemplate.exchange(url, HttpMethod.GET, requestEntity, JsonNode.class);
@@ -116,28 +106,13 @@ public class LinkedinApiService {
             String externalId = item.has("id") ? item.get("id").asText() : null;
             if (externalId == null || externalId.isBlank()) continue;
 
-            String text = "";
-            if (item.has("commentary")) {
-                text = item.get("commentary").asText();
-            } else if (item.has("text") && item.get("text").has("text")) {
-                text = item.get("text").get("text").asText();
-            }
+            String text = extractText(item);
+            if (text.isBlank()) continue;
 
-            String imageUrl = "";
-            if (item.has("content") && item.get("content").has("media") && item.get("content").get("media").has("id")) {
-                imageUrl = item.get("content").get("media").get("id").asText();
-            }
-
+            String imageUrl = extractImage(item);
             String permalink = "https://www.linkedin.com/feed/update/" + externalId;
 
-            LocalDateTime publicadoEm = LocalDateTime.now();
-            if (item.has("publishedAt")) {
-                long publishedTs = item.get("publishedAt").asLong();
-                publicadoEm = LocalDateTime.ofInstant(Instant.ofEpochMilli(publishedTs), ZoneId.systemDefault());
-            } else if (item.has("createdAt")) {
-                long createdTs = item.get("createdAt").asLong();
-                publicadoEm = LocalDateTime.ofInstant(Instant.ofEpochMilli(createdTs), ZoneId.systemDefault());
-            }
+            LocalDateTime publicadoEm = extractTimestamp(item);
 
             int likes = 0;
             int comments = 0;
@@ -163,5 +138,52 @@ public class LinkedinApiService {
         }
 
         return posts;
+    }
+
+    private String extractText(JsonNode item) {
+        if (item.has("commentary")) {
+            return item.get("commentary").asText("");
+        }
+        if (item.has("text") && item.get("text").has("text")) {
+            return item.get("text").get("text").asText("");
+        }
+        if (item.has("specificContent")) {
+            JsonNode ugc = item.get("specificContent").get("com.linkedin.ugc.ShareContent");
+            if (ugc != null && ugc.has("shareCommentary") && ugc.get("shareCommentary").has("text")) {
+                return ugc.get("shareCommentary").get("text").asText("");
+            }
+        }
+        return "";
+    }
+
+    private String extractImage(JsonNode item) {
+        if (item.has("content") && item.get("content").has("media") && item.get("content").get("media").has("id")) {
+            return item.get("content").get("media").get("id").asText("");
+        }
+        if (item.has("specificContent")) {
+            JsonNode ugc = item.get("specificContent").get("com.linkedin.ugc.ShareContent");
+            if (ugc != null && ugc.has("media") && ugc.get("media").isArray() && !ugc.get("media").isEmpty()) {
+                JsonNode m = ugc.get("media").get(0);
+                if (m.has("originalUrl")) return m.get("originalUrl").asText("");
+                if (m.has("media")) return m.get("media").asText("");
+            }
+        }
+        return "";
+    }
+
+    private LocalDateTime extractTimestamp(JsonNode item) {
+        if (item.has("publishedAt")) {
+            long publishedTs = item.get("publishedAt").asLong();
+            return LocalDateTime.ofInstant(Instant.ofEpochMilli(publishedTs), ZoneId.systemDefault());
+        }
+        if (item.has("created") && item.get("created").has("time")) {
+            long createdTs = item.get("created").get("time").asLong();
+            return LocalDateTime.ofInstant(Instant.ofEpochMilli(createdTs), ZoneId.systemDefault());
+        }
+        if (item.has("createdAt")) {
+            long createdTs = item.get("createdAt").asLong();
+            return LocalDateTime.ofInstant(Instant.ofEpochMilli(createdTs), ZoneId.systemDefault());
+        }
+        return LocalDateTime.now();
     }
 }
